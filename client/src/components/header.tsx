@@ -26,21 +26,50 @@ export default function Header() {
           <nav className="hidden md:flex items-center space-x-8">
             <button 
               onClick={() => scrollToSection('solutions')} 
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors font-medium"
               data-testid="nav-solutions"
             >
               Solutions
             </button>
+            <div className="relative group">
+              <button className="text-muted-foreground hover:text-foreground transition-colors font-medium flex items-center">
+                Resources
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {/* Dropdown Menu */}
+              <div className="absolute top-full left-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="py-2">
+                  <a href="#" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
+                    Case Studies
+                  </a>
+                  <a href="#" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
+                    Whitepapers
+                  </a>
+                  <a href="#" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
+                    Blog
+                  </a>
+                  <a href="#" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
+                    Documentation
+                  </a>
+                  <a href="#" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
+                    Support Center
+                  </a>
+                </div>
+              </div>
+            </div>
             <button 
               onClick={() => scrollToSection('about')} 
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors font-medium"
               data-testid="nav-about"
             >
               About
             </button>
             <button 
               onClick={() => scrollToSection('contact')} 
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors font-medium"
               data-testid="nav-contact"
             >
               Contact
@@ -51,10 +80,11 @@ export default function Header() {
           <div className="flex items-center space-x-4">
             <Button 
               onClick={() => scrollToSection('contact')}
-              className="hidden md:inline-flex bg-primary text-primary-foreground hover:bg-primary/90"
+              className="hidden lg:inline-flex bg-gradient-to-r from-primary to-accent text-white hover:from-primary/90 hover:to-accent/90 px-6 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 border-0"
               data-testid="button-get-demo"
             >
-              Get Demo
+              <span className="mr-2">🚀</span>
+              Book Demo
             </Button>
             
             {/* Mobile menu button */}
@@ -72,35 +102,45 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border">
+          <div className="md:hidden py-4 border-t border-border bg-background/95 backdrop-blur-sm">
             <nav className="flex flex-col space-y-4">
               <button 
                 onClick={() => scrollToSection('solutions')} 
-                className="text-muted-foreground hover:text-foreground transition-colors text-left"
+                className="text-muted-foreground hover:text-foreground transition-colors text-left font-medium"
                 data-testid="nav-mobile-solutions"
               >
                 Solutions
               </button>
+              <div className="text-left">
+                <div className="text-muted-foreground font-medium mb-2">Resources</div>
+                <div className="pl-4 space-y-2">
+                  <a href="#" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Case Studies</a>
+                  <a href="#" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</a>
+                  <a href="#" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Documentation</a>
+                  <a href="#" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Support</a>
+                </div>
+              </div>
               <button 
                 onClick={() => scrollToSection('about')} 
-                className="text-muted-foreground hover:text-foreground transition-colors text-left"
+                className="text-muted-foreground hover:text-foreground transition-colors text-left font-medium"
                 data-testid="nav-mobile-about"
               >
                 About
               </button>
               <button 
                 onClick={() => scrollToSection('contact')} 
-                className="text-muted-foreground hover:text-foreground transition-colors text-left"
+                className="text-muted-foreground hover:text-foreground transition-colors text-left font-medium"
                 data-testid="nav-mobile-contact"
               >
                 Contact
               </button>
               <Button 
                 onClick={() => scrollToSection('contact')}
-                className="bg-primary text-primary-foreground hover:bg-primary/90 w-full"
+                className="bg-gradient-to-r from-primary to-accent text-white hover:from-primary/90 hover:to-accent/90 w-full font-semibold shadow-lg"
                 data-testid="button-mobile-demo"
               >
-                Get Demo
+                <span className="mr-2">🚀</span>
+                Book Demo
               </Button>
             </nav>
           </div>

@@ -9,7 +9,7 @@ export default function AboutSection() {
             <div className="space-y-6">
               <h2 className="text-4xl lg:text-5xl font-bold">
                 Building the future of AI in 
-                <span className="text-gradient"> Bihar and beyond</span>
+                <span className="text-enhanced-gradient"> Bihar and beyond</span>
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed">
                 Based in Patna, Bihar, VaridantAI is at the forefront of India's AI revolution. We combine global innovation with local expertise to create solutions that truly understand and serve the Indian market.

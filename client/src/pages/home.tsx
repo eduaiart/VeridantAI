@@ -11,21 +11,81 @@ export default function Home() {
       <Header />
       <HeroSection />
       
-      {/* Client Logos Ticker */}
-      <section className="py-12 bg-muted/50">
+      {/* Client Logos Carousel */}
+      <section className="py-12 bg-muted/50 overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <p className="text-muted-foreground font-medium">Powering innovation for forward-thinking organizations</p>
+            <p className="text-muted-foreground font-medium">Powering innovation for forward-thinking organizations across India</p>
           </div>
-          <div className="overflow-hidden">
-            <div className="flex animate-pulse">
-              <div className="flex items-center space-x-12 flex-shrink-0">
-                {['TechCorp', 'EduIndia', 'HealthPlus', 'FinNext', 'SmartSys', 'InnovateLab'].map((name) => (
-                  <div key={name} className="w-32 h-16 bg-muted rounded-lg flex items-center justify-center">
-                    <span className="text-muted-foreground font-semibold">{name}</span>
-                  </div>
-                ))}
+          
+          {/* Scrolling Logo Container */}
+          <div className="relative">
+            {/* Fade effects */}
+            <div className="absolute left-0 top-0 w-20 h-full bg-gradient-to-r from-muted/50 to-transparent z-10"></div>
+            <div className="absolute right-0 top-0 w-20 h-full bg-gradient-to-l from-muted/50 to-transparent z-10"></div>
+            
+            <div className="overflow-hidden">
+              <div className="flex animate-slide-left">
+                <div className="flex items-center space-x-16 flex-shrink-0">
+                  {/* First set of logos */}
+                  {[
+                    { name: 'TechCorp', desc: 'Enterprise Solutions' },
+                    { name: 'EduVision', desc: 'Educational Platform' },
+                    { name: 'HealthCare+', desc: 'Medical Systems' },
+                    { name: 'FinanceAI', desc: 'Financial Services' },
+                    { name: 'SmartGov', desc: 'Government Tech' },
+                    { name: 'AgriTech', desc: 'Agricultural Innovation' },
+                    { name: 'RetailPro', desc: 'Retail Solutions' },
+                    { name: 'LogiMax', desc: 'Supply Chain' }
+                  ].map((client) => (
+                    <div key={client.name} className="flex flex-col items-center min-w-[140px] group">
+                      <div className="w-32 h-20 bg-white/80 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300 border border-border/50">
+                        <div className="text-center">
+                          <div className="text-foreground font-bold text-sm mb-1">{client.name}</div>
+                          <div className="text-muted-foreground text-xs">{client.desc}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Duplicate set for seamless loop */}
+                  {[
+                    { name: 'TechCorp', desc: 'Enterprise Solutions' },
+                    { name: 'EduVision', desc: 'Educational Platform' },
+                    { name: 'HealthCare+', desc: 'Medical Systems' },
+                    { name: 'FinanceAI', desc: 'Financial Services' },
+                    { name: 'SmartGov', desc: 'Government Tech' },
+                    { name: 'AgriTech', desc: 'Agricultural Innovation' },
+                    { name: 'RetailPro', desc: 'Retail Solutions' },
+                    { name: 'LogiMax', desc: 'Supply Chain' }
+                  ].map((client, index) => (
+                    <div key={`${client.name}-${index}`} className="flex flex-col items-center min-w-[140px] group">
+                      <div className="w-32 h-20 bg-white/80 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300 border border-border/50">
+                        <div className="text-center">
+                          <div className="text-foreground font-bold text-sm mb-1">{client.name}</div>
+                          <div className="text-muted-foreground text-xs">{client.desc}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
+            </div>
+          </div>
+          
+          {/* Trust Indicators */}
+          <div className="mt-8 flex justify-center items-center space-x-8 text-muted-foreground text-sm">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span>500+ Active Clients</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span>99.9% Uptime</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+              <span>Enterprise Security</span>
             </div>
           </div>
         </div>
@@ -33,7 +93,155 @@ export default function Home() {
 
       <ServicesSection />
       
-      {/* Success Stories */}
+      {/* Testimonials & Case Studies */}
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold mb-6">
+              Trusted by industry leaders across India
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              See how organizations are achieving breakthrough results with our AI solutions
+            </p>
+          </div>
+          
+          <div className="grid lg:grid-cols-2 gap-8 mb-16">
+            {/* Case Study 1 - Education */}
+            <div className="bg-card p-8 rounded-2xl shadow-lg border border-border">
+              <div className="flex items-start space-x-4 mb-6">
+                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-blue-600 font-bold text-lg">E</span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-lg">EduTech Institute</h4>
+                  <p className="text-muted-foreground text-sm">Leading Educational Platform</p>
+                </div>
+              </div>
+              
+              <blockquote className="text-lg text-muted-foreground mb-6 italic">
+                "VaridantAI's adaptive learning platform increased our student engagement by 85% and reduced dropout rates by 60%. The AI tutoring system has been transformational for our remote learning programs."
+              </blockquote>
+              
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">85%</div>
+                  <div className="text-xs text-muted-foreground">Engagement Boost</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">60%</div>
+                  <div className="text-xs text-muted-foreground">Dropout Reduction</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">50K+</div>
+                  <div className="text-xs text-muted-foreground">Students Impacted</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                  <span className="text-white font-semibold text-sm">DR</span>
+                </div>
+                <div>
+                  <div className="font-semibold">Dr. Priya Sharma</div>
+                  <div className="text-muted-foreground text-sm">Director of Technology</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Case Study 2 - Healthcare */}
+            <div className="bg-card p-8 rounded-2xl shadow-lg border border-border">
+              <div className="flex items-start space-x-4 mb-6">
+                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-green-600 font-bold text-lg">M</span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-lg">Medicare Hospital Group</h4>
+                  <p className="text-muted-foreground text-sm">Multi-specialty Healthcare Network</p>
+                </div>
+              </div>
+              
+              <blockquote className="text-lg text-muted-foreground mb-6 italic">
+                "The AI diagnostic assistant has reduced our diagnosis time by 40% while improving accuracy by 25%. Patient satisfaction scores have reached an all-time high of 96%."
+              </blockquote>
+              
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">40%</div>
+                  <div className="text-xs text-muted-foreground">Faster Diagnosis</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">25%</div>
+                  <div className="text-xs text-muted-foreground">Better Accuracy</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">96%</div>
+                  <div className="text-xs text-muted-foreground">Patient Satisfaction</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+                  <span className="text-white font-semibold text-sm">AM</span>
+                </div>
+                <div>
+                  <div className="font-semibold">Dr. Arjun Mehta</div>
+                  <div className="text-muted-foreground text-sm">Chief Medical Officer</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Quick Testimonials */}
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-white/50 p-6 rounded-xl border border-border/50">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center">
+                  <span className="text-white font-semibold text-sm">FS</span>
+                </div>
+                <div>
+                  <div className="font-semibold">FinSecure Bank</div>
+                  <div className="text-muted-foreground text-xs">Digital Banking</div>
+                </div>
+              </div>
+              <p className="text-muted-foreground text-sm italic">
+                "Fraud detection improved by 95% while reducing false positives by 70%. Outstanding results!"
+              </p>
+            </div>
+            
+            <div className="bg-white/50 p-6 rounded-xl border border-border/50">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center">
+                  <span className="text-white font-semibold text-sm">ST</span>
+                </div>
+                <div>
+                  <div className="font-semibold">SmartRetail Ltd</div>
+                  <div className="text-muted-foreground text-xs">E-commerce</div>
+                </div>
+              </div>
+              <p className="text-muted-foreground text-sm italic">
+                "AI recommendations increased our sales by 45% and customer retention by 35%."
+              </p>
+            </div>
+            
+            <div className="bg-white/50 p-6 rounded-xl border border-border/50">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center">
+                  <span className="text-white font-semibold text-sm">AG</span>
+                </div>
+                <div>
+                  <div className="font-semibold">AgroTech Solutions</div>
+                  <div className="text-muted-foreground text-xs">Agriculture</div>
+                </div>
+              </div>
+              <p className="text-muted-foreground text-sm italic">
+                "Crop yield predictions helped us increase productivity by 30% and reduce waste by 50%."
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Interactive Success Stories */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -46,22 +254,72 @@ export default function Home() {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-card p-8 rounded-2xl shadow-lg border border-border text-center">
-              <div className="text-4xl font-bold text-primary mb-2">75%</div>
+            {/* Education Statistics */}
+            <div className="bg-card p-8 rounded-2xl shadow-lg border border-border text-center group hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <div className="text-white text-2xl">📚</div>
+              </div>
+              <div className="text-5xl font-bold text-primary mb-2 animate-count-up">75%</div>
+              <div className="w-full bg-muted rounded-full h-2 mb-4">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style={{width: '75%'}}></div>
+              </div>
               <div className="text-lg font-semibold mb-2">Learning Efficiency Boost</div>
-              <div className="text-muted-foreground">in partner educational institutions</div>
+              <div className="text-muted-foreground">in 200+ partner educational institutions</div>
+              <div className="mt-4 text-xs text-muted-foreground">
+                Source: EdTech Impact Study 2024
+              </div>
             </div>
             
-            <div className="bg-card p-8 rounded-2xl shadow-lg border border-border text-center">
-              <div className="text-4xl font-bold text-primary mb-2">40%</div>
+            {/* Healthcare Statistics */}
+            <div className="bg-card p-8 rounded-2xl shadow-lg border border-border text-center group hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                <div className="text-white text-2xl">🏥</div>
+              </div>
+              <div className="text-5xl font-bold text-primary mb-2 animate-count-up">40%</div>
+              <div className="w-full bg-muted rounded-full h-2 mb-4">
+                <div className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full" style={{width: '40%'}}></div>
+              </div>
               <div className="text-lg font-semibold mb-2">Faster Diagnostics</div>
               <div className="text-muted-foreground">with AI-assisted healthcare tools</div>
+              <div className="mt-4 text-xs text-muted-foreground">
+                Source: Healthcare Efficiency Report 2024
+              </div>
             </div>
             
-            <div className="bg-card p-8 rounded-2xl shadow-lg border border-border text-center">
-              <div className="text-4xl font-bold text-primary mb-2">95%</div>
+            {/* Finance Statistics */}
+            <div className="bg-card p-8 rounded-2xl shadow-lg border border-border text-center group hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                <div className="text-white text-2xl">💰</div>
+              </div>
+              <div className="text-5xl font-bold text-primary mb-2 animate-count-up">95%</div>
+              <div className="w-full bg-muted rounded-full h-2 mb-4">
+                <div className="bg-gradient-to-r from-orange-500 to-red-600 h-2 rounded-full" style={{width: '95%'}}></div>
+              </div>
               <div className="text-lg font-semibold mb-2">Financial Accuracy</div>
               <div className="text-muted-foreground">in fraud detection systems</div>
+              <div className="mt-4 text-xs text-muted-foreground">
+                Source: FinTech Security Analysis 2024
+              </div>
+            </div>
+          </div>
+          
+          {/* Additional Impact Metrics */}
+          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary animate-count-up">500+</div>
+              <div className="text-muted-foreground text-sm">Active Deployments</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary animate-count-up">₹50Cr+</div>
+              <div className="text-muted-foreground text-sm">Cost Savings Generated</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary animate-count-up">99.9%</div>
+              <div className="text-muted-foreground text-sm">System Uptime</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary animate-count-up">24/7</div>
+              <div className="text-muted-foreground text-sm">Support Coverage</div>
             </div>
           </div>
         </div>

@@ -50,7 +50,7 @@ export default function ServicesSection() {
         <div className="text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-bold mb-6">
             The AI platform that transforms 
-            <span className="text-gradient"> every industry</span>
+            <span className="text-enhanced-gradient"> every industry</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             From education to healthcare, finance to productivity - our comprehensive AI solutions empower organizations across India to achieve breakthrough results.

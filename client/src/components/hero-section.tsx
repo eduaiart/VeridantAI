@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/hooks/use-language";
 
 export default function HeroSection() {
+  const { t } = useLanguage();
   const scrollToContact = () => {
     document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -29,11 +31,11 @@ export default function HeroSection() {
           <div className="space-y-8">
             <div className="space-y-4">
               <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
-                One AI platform to transform your 
-                <span className="text-accent-foreground"> entire business</span>
+                {t('hero.title')} 
+                <span className="text-accent-foreground">{t('hero.titleHighlight')}</span>
               </h1>
               <p className="text-xl lg:text-2xl text-white/90 leading-relaxed">
-                Revolutionize education, healthcare, finance, and productivity with intelligent AI solutions built for the Indian market.
+                {t('hero.subtitle')}
               </p>
             </div>
             
@@ -43,7 +45,7 @@ export default function HeroSection() {
                 className="bg-white text-primary px-8 py-4 h-auto text-lg font-semibold hover:bg-white/90 shadow-lg"
                 data-testid="button-hero-demo"
               >
-                Get a Demo
+                {t('hero.getDemo')}
               </Button>
               <Button 
                 onClick={scrollToSolutions}
@@ -51,12 +53,12 @@ export default function HeroSection() {
                 className="border-2 border-white text-white px-8 py-4 h-auto text-lg font-semibold hover:bg-white/10 bg-transparent"
                 data-testid="button-hero-explore"
               >
-                Explore Solutions
+                {t('hero.exploreSolutions')}
               </Button>
             </div>
             
             <div className="text-white/80">
-              <p className="text-sm">Trusted by leading organizations across India</p>
+              <p className="text-sm">{t('hero.trustedBy')}</p>
             </div>
           </div>
           

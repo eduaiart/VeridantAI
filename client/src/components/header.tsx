@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { useLanguage } from "@/hooks/use-language";
+import LanguageToggle from "@/components/language-toggle";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   const scrollToSection = (sectionId: string) => {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
@@ -29,11 +32,11 @@ export default function Header() {
               className="text-muted-foreground hover:text-foreground transition-colors font-medium"
               data-testid="nav-solutions"
             >
-              Solutions
+              {t('navigation.solutions')}
             </button>
             <div className="relative group">
               <button className="text-muted-foreground hover:text-foreground transition-colors font-medium flex items-center">
-                Resources
+                {t('navigation.resources')}
                 <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -43,19 +46,19 @@ export default function Header() {
               <div className="absolute top-full left-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div className="py-2">
                   <a href="#" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-                    Case Studies
+                    {t('navigation.caseStudies')}
                   </a>
                   <a href="#" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-                    Whitepapers
+                    {t('navigation.whitepapers')}
                   </a>
                   <a href="#" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-                    Blog
+                    {t('navigation.blog')}
                   </a>
                   <a href="#" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-                    Documentation
+                    {t('navigation.documentation')}
                   </a>
                   <a href="#" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-                    Support Center
+                    {t('navigation.support')}
                   </a>
                 </div>
               </div>
@@ -65,26 +68,27 @@ export default function Header() {
               className="text-muted-foreground hover:text-foreground transition-colors font-medium"
               data-testid="nav-about"
             >
-              About
+              {t('navigation.about')}
             </button>
             <button 
               onClick={() => scrollToSection('contact')} 
               className="text-muted-foreground hover:text-foreground transition-colors font-medium"
               data-testid="nav-contact"
             >
-              Contact
+              {t('navigation.contact')}
             </button>
           </nav>
           
           {/* CTA Button & Mobile Menu */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
+            <LanguageToggle />
             <Button 
               onClick={() => scrollToSection('contact')}
               className="hidden lg:inline-flex bg-gradient-to-r from-primary to-accent text-white hover:from-primary/90 hover:to-accent/90 px-6 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 border-0"
               data-testid="button-get-demo"
             >
               <span className="mr-2">🚀</span>
-              Book Demo
+              {t('navigation.bookDemo')}
             </Button>
             
             {/* Mobile menu button */}
@@ -109,15 +113,15 @@ export default function Header() {
                 className="text-muted-foreground hover:text-foreground transition-colors text-left font-medium"
                 data-testid="nav-mobile-solutions"
               >
-                Solutions
+                {t('navigation.solutions')}
               </button>
               <div className="text-left">
-                <div className="text-muted-foreground font-medium mb-2">Resources</div>
+                <div className="text-muted-foreground font-medium mb-2">{t('navigation.resources')}</div>
                 <div className="pl-4 space-y-2">
-                  <a href="#" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Case Studies</a>
-                  <a href="#" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</a>
-                  <a href="#" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Documentation</a>
-                  <a href="#" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Support</a>
+                  <a href="#" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">{t('navigation.caseStudies')}</a>
+                  <a href="#" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">{t('navigation.blog')}</a>
+                  <a href="#" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">{t('navigation.documentation')}</a>
+                  <a href="#" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">{t('navigation.support')}</a>
                 </div>
               </div>
               <button 
@@ -125,14 +129,14 @@ export default function Header() {
                 className="text-muted-foreground hover:text-foreground transition-colors text-left font-medium"
                 data-testid="nav-mobile-about"
               >
-                About
+                {t('navigation.about')}
               </button>
               <button 
                 onClick={() => scrollToSection('contact')} 
                 className="text-muted-foreground hover:text-foreground transition-colors text-left font-medium"
                 data-testid="nav-mobile-contact"
               >
-                Contact
+                {t('navigation.contact')}
               </button>
               <Button 
                 onClick={() => scrollToSection('contact')}
@@ -140,7 +144,7 @@ export default function Header() {
                 data-testid="button-mobile-demo"
               >
                 <span className="mr-2">🚀</span>
-                Book Demo
+                {t('navigation.bookDemo')}
               </Button>
             </nav>
           </div>

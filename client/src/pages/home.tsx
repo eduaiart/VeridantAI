@@ -4,8 +4,10 @@ import ServicesSection from "@/components/services-section";
 import AboutSection from "@/components/about-section";
 import ContactSection from "@/components/contact-section";
 import Footer from "@/components/footer";
+import { useLanguage } from "@/hooks/use-language";
 
 export default function Home() {
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -15,7 +17,7 @@ export default function Home() {
       <section className="py-12 bg-muted/50 overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <p className="text-muted-foreground font-medium">Powering innovation for forward-thinking organizations across India</p>
+            <p className="text-muted-foreground font-medium">{t('clients.title')}</p>
           </div>
           
           {/* Scrolling Logo Container */}
@@ -77,15 +79,15 @@ export default function Home() {
           <div className="mt-8 flex justify-center items-center space-x-8 text-muted-foreground text-sm">
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>500+ Active Clients</span>
+              <span>500+ {t('clients.activeClients')}</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span>99.9% Uptime</span>
+              <span>99.9% {t('clients.uptime')}</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <span>Enterprise Security</span>
+              <span>{t('clients.security')}</span>
             </div>
           </div>
         </div>
@@ -98,10 +100,10 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-              Trusted by industry leaders across India
+              {t('testimonials.title')}
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              See how organizations are achieving breakthrough results with our AI solutions
+              {t('testimonials.subtitle')}
             </p>
           </div>
           
@@ -113,27 +115,27 @@ export default function Home() {
                   <span className="text-blue-600 font-bold text-lg">E</span>
                 </div>
                 <div>
-                  <h4 className="font-bold text-lg">EduTech Institute</h4>
-                  <p className="text-muted-foreground text-sm">Leading Educational Platform</p>
+                  <h4 className="font-bold text-lg">{t('testimonials.edutech.company')}</h4>
+                  <p className="text-muted-foreground text-sm">{t('testimonials.edutech.type')}</p>
                 </div>
               </div>
               
               <blockquote className="text-lg text-muted-foreground mb-6 italic">
-                "VaridantAI's adaptive learning platform increased our student engagement by 85% and reduced dropout rates by 60%. The AI tutoring system has been transformational for our remote learning programs."
+                "{t('testimonials.edutech.quote')}"
               </blockquote>
               
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">85%</div>
-                  <div className="text-xs text-muted-foreground">Engagement Boost</div>
+                  <div className="text-xs text-muted-foreground">{t('testimonials.edutech.metrics.engagement')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">60%</div>
-                  <div className="text-xs text-muted-foreground">Dropout Reduction</div>
+                  <div className="text-xs text-muted-foreground">{t('testimonials.edutech.metrics.dropout')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">50K+</div>
-                  <div className="text-xs text-muted-foreground">Students Impacted</div>
+                  <div className="text-xs text-muted-foreground">{t('testimonials.edutech.metrics.students')}</div>
                 </div>
               </div>
               
@@ -142,8 +144,8 @@ export default function Home() {
                   <span className="text-white font-semibold text-sm">DR</span>
                 </div>
                 <div>
-                  <div className="font-semibold">Dr. Priya Sharma</div>
-                  <div className="text-muted-foreground text-sm">Director of Technology</div>
+                  <div className="font-semibold">{t('testimonials.edutech.director')}</div>
+                  <div className="text-muted-foreground text-sm">{t('testimonials.edutech.position')}</div>
                 </div>
               </div>
             </div>

@@ -7,14 +7,17 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
-
-# Copy all source code
+# Copy all source code first (needed for build)
 COPY . .
+
+# Install all dependencies including devDependencies for build
+RUN npm ci
 
 # Build the application (frontend and backend)
 RUN npm run build
+
+# Remove devDependencies after build to reduce image size
+RUN npm ci --only=production && npm cache clean --force
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs

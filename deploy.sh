@@ -41,9 +41,9 @@ echo -e "${BLUE}🔌 Enabling required APIs...${NC}"
 gcloud services enable appengine.googleapis.com
 gcloud services enable cloudbuild.googleapis.com
 
-# Install dependencies
+# Install dependencies (including devDependencies for build)
 echo -e "${BLUE}📚 Installing dependencies...${NC}"
-npm install
+npm ci
 
 # Build the application
 echo -e "${BLUE}🔨 Building the application...${NC}"

@@ -16,8 +16,7 @@ RUN npm ci
 # Build the application (frontend and backend)
 RUN npm run build
 
-# Remove devDependencies after build to reduce image size
-RUN npm ci --only=production && npm cache clean --force
+# Keep all dependencies for runtime (vite needed for dev mode setup)
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs
@@ -29,6 +28,9 @@ USER nextjs
 
 # Expose the port the app runs on
 EXPOSE 8080
+
+# Set environment variable for port
+ENV PORT=8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

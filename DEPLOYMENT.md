@@ -1,6 +1,6 @@
 # Google Cloud Deployment Guide
 
-This guide will help you deploy your VaridantAI website to Google Cloud Platform using App Engine.
+This guide will help you deploy your VeridantAI website to Google Cloud Platform using App Engine.
 
 ## Prerequisites
 

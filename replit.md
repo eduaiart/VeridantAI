@@ -1,8 +1,8 @@
-# VaridantAI Company Website
+# VeridantAI Company Website
 
 ## Overview
 
-This is a modern, full-stack web application for VaridantAI, a software company specializing in AI-driven solutions across education, healthcare, and financial technology. The application serves as the company's primary web presence, featuring comprehensive information about their services, company details, and a contact system for potential clients.
+This is a modern, full-stack web application for VeridantAI, a software company specializing in AI-driven solutions across education, healthcare, and financial technology. The application serves as the company's primary web presence, featuring comprehensive information about their services, company details, and a contact system for potential clients.
 
 The project implements a clean, professional design with smooth scrolling navigation, responsive layouts, and an integrated contact form that stores submissions in a PostgreSQL database. Built with modern web technologies, it provides an excellent user experience across all devices while maintaining high performance and accessibility standards.
 

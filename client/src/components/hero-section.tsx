@@ -67,7 +67,7 @@ export default function HeroSection() {
             <div className="relative group cursor-pointer">
               <img 
                 src="https://images.unsplash.com/photo-1677442136019-21780ecad995?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
-                alt="VaridantAI Platform Demo" 
+                alt="VeridantAI Platform Demo" 
                 className="rounded-2xl shadow-2xl w-full h-auto transition-transform duration-300 group-hover:scale-105" 
               />
               

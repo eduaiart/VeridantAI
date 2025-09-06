@@ -70,7 +70,7 @@ export const translations = {
       edutech: {
         company: "EduTech Institute",
         type: "Leading Educational Platform",
-        quote: "VaridantAI's adaptive learning platform increased our student engagement by 85% and reduced dropout rates by 60%. The AI tutoring system has been transformational for our remote learning programs.",
+        quote: "VeridantAI's adaptive learning platform increased our student engagement by 85% and reduced dropout rates by 60%. The AI tutoring system has been transformational for our remote learning programs.",
         director: "Dr. Priya Sharma",
         position: "Director of Technology",
         metrics: {
@@ -96,7 +96,7 @@ export const translations = {
     // Statistics
     stats: {
       title: "Delivering measurable results across India",
-      subtitle: "See how organizations are transforming their operations with VaridantAI solutions",
+      subtitle: "See how organizations are transforming their operations with VeridantAI solutions",
       learningBoost: "Learning Efficiency Boost",
       fasterDiagnostics: "Faster Diagnostics",
       financialAccuracy: "Financial Accuracy",
@@ -118,7 +118,7 @@ export const translations = {
     about: {
       title: "Building the future of AI in",
       titleHighlight: "Bihar and beyond",
-      subtitle: "Based in Patna, Bihar, VaridantAI is at the forefront of India's AI revolution. We combine global innovation with local expertise to create solutions that truly understand and serve the Indian market.",
+      subtitle: "Based in Patna, Bihar, VeridantAI is at the forefront of India's AI revolution. We combine global innovation with local expertise to create solutions that truly understand and serve the Indian market.",
       innovation: "Years of Innovation",
       clients: "Happy Clients",
       projects: "Projects Delivered", 
@@ -129,7 +129,7 @@ export const translations = {
     
     // Why Choose
     whyChoose: {
-      title: "Why choose VaridantAI?",
+      title: "Why choose VeridantAI?",
       subtitle: "We bring together cutting-edge AI technology, deep industry expertise, and a commitment to solving real problems for real people.",
       crossDomain: {
         title: "Cross-Domain Expertise",
@@ -160,7 +160,7 @@ export const translations = {
     // CTA
     cta: {
       title: "Ready to transform your business with AI?",
-      subtitle: "Join the growing number of organizations across India who trust VaridantAI to power their digital transformation. Let's build the future together.",
+      subtitle: "Join the growing number of organizations across India who trust VeridantAI to power their digital transformation. Let's build the future together.",
       scheduleDemo: "Schedule a Demo",
       contactTeam: "Contact Our Team"
     },
@@ -288,7 +288,7 @@ export const translations = {
       edutech: {
         company: "एडुटेक इंस्टीट्यूट",
         type: "अग्रणी शैक्षिक मंच",
-        quote: "VaridantAI के अनुकूली शिक्षा मंच ने हमारी छात्र सहभागिता में 85% की वृद्धि की और ड्रॉपआउट दर में 60% की कमी लाई। AI ट्यूटरिंग सिस्टम हमारे दूरस्थ शिक्षा कार्यक्रमों के लिए परिवर्तनकारी रहा है।",
+        quote: "VeridantAI के अनुकूली शिक्षा मंच ने हमारी छात्र सहभागिता में 85% की वृद्धि की और ड्रॉपआउट दर में 60% की कमी लाई। AI ट्यूटरिंग सिस्टम हमारे दूरस्थ शिक्षा कार्यक्रमों के लिए परिवर्तनकारी रहा है।",
         director: "डॉ. प्रिया शर्मा",
         position: "प्रौद्योगिकी निदेशक",
         metrics: {
@@ -314,7 +314,7 @@ export const translations = {
     // Statistics
     stats: {
       title: "पूरे भारत में मापने योग्य परिणाम प्रदान करना",
-      subtitle: "देखें कि संगठन VaridantAI समाधानों के साथ अपने संचालन को कैसे बदल रहे हैं",
+      subtitle: "देखें कि संगठन VeridantAI समाधानों के साथ अपने संचालन को कैसे बदल रहे हैं",
       learningBoost: "शिक्षा दक्षता वृद्धि",
       fasterDiagnostics: "तेज़ निदान",
       financialAccuracy: "वित्तीय सटीकता",
@@ -336,7 +336,7 @@ export const translations = {
     about: {
       title: "AI का भविष्य बनाना",
       titleHighlight: "बिहार और उससे आगे",
-      subtitle: "पटना, बिहार में स्थित, VaridantAI भारत की AI क्रांति के अग्रणी है। हम वैश्विक नवाचार को स्थानीय विशेषज्ञता के साथ मिलाकर ऐसे समाधान बनाते हैं जो भारतीय बाजार को सच में समझते और सेवा करते हैं।",
+      subtitle: "पटना, बिहार में स्थित, VeridantAI भारत की AI क्रांति के अग्रणी है। हम वैश्विक नवाचार को स्थानीय विशेषज्ञता के साथ मिलाकर ऐसे समाधान बनाते हैं जो भारतीय बाजार को सच में समझते और सेवा करते हैं।",
       innovation: "नवाचार के वर्ष",
       clients: "खुश क्लाइंट्स",
       projects: "परियोजनाएं वितरित",
@@ -347,7 +347,7 @@ export const translations = {
     
     // Why Choose
     whyChoose: {
-      title: "VaridantAI क्यों चुनें?",
+      title: "VeridantAI क्यों चुनें?",
       subtitle: "हम अत्याधुनिक AI तकनीक, गहन उद्योग विशेषज्ञता और वास्तविक लोगों की वास्तविक समस्याओं को हल करने की प्रतिबद्धता को एक साथ लाते हैं।",
       crossDomain: {
         title: "क्रॉस-डोमेन विशेषज्ञता",
@@ -378,7 +378,7 @@ export const translations = {
     // CTA
     cta: {
       title: "AI के साथ अपने व्यवसाय को बदलने के लिए तैयार हैं?",
-      subtitle: "पूरे भारत में बढ़ती संख्या में संगठनों के साथ जुड़ें जो अपने डिजिटल परिवर्तन को शक्ति प्रदान करने के लिए VaridantAI पर भरोसा करते हैं। आइए मिलकर भविष्य बनाएं।",
+      subtitle: "पूरे भारत में बढ़ती संख्या में संगठनों के साथ जुड़ें जो अपने डिजिटल परिवर्तन को शक्ति प्रदान करने के लिए VeridantAI पर भरोसा करते हैं। आइए मिलकर भविष्य बनाएं।",
       scheduleDemo: "डेमो शेड्यूल करें",
       contactTeam: "हमारी टीम से संपर्क करें"
     },

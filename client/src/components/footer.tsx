@@ -11,7 +11,7 @@ export default function Footer() {
               <div className="w-8 h-8 rounded-lg hero-gradient flex items-center justify-center">
                 <span className="text-white font-bold text-lg">V</span>
               </div>
-              <span className="font-bold text-xl">VaridantAI</span>
+              <span className="font-bold text-xl">VeridantAI</span>
             </div>
             <p className="text-muted-foreground">
               Innovating daily life through AI solutions. Based in Patna, Bihar, serving India and beyond.
@@ -62,7 +62,7 @@ export default function Footer() {
         <div className="border-t border-border pt-8 mt-16">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-muted-foreground text-sm">
-              © 2024 VaridantAI.in. All rights reserved.
+              © 2024 VeridantAI.in. All rights reserved.
             </p>
             <div className="flex items-center space-x-6">
               <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">

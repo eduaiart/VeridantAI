@@ -15,7 +15,7 @@ export default function AboutSection() {
                 </span>
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                Based in India, VeridantAI is at the forefront of India's AI
+                VeridantAI is at the forefront of India's AI
                 revolution. We combine global innovation with local expertise to
                 create solutions that truly understand and serve the Indian
                 market.

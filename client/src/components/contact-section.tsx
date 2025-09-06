@@ -100,7 +100,8 @@ export default function ContactSection() {
                 <div>
                   <h4 className="font-semibold mb-1">Office Location</h4>
                   <p className="text-muted-foreground">
-                    Patna, Bihar 800002, India
+                    VERIDANTAI SOLUTION PRIVATE LIMITED,Patna, Bihar 800002,
+                    India
                   </p>
                 </div>
               </div>

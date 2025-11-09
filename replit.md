@@ -6,6 +6,22 @@ This is a modern, full-stack web application for VeridantAI, a software company 
 
 The project implements a clean, professional design with smooth scrolling navigation, responsive layouts, and an integrated contact form that stores submissions in a PostgreSQL database. Built with modern web technologies, it provides an excellent user experience across all devices while maintaining high performance and accessibility standards.
 
+## Recent Changes (November 2025)
+
+- **Branding Update**: Logo updated throughout the site with two-tone design - "Veridant" in slate-600 gray (#64748B) and "AI" in sky-500 blue (#0EA5E9)
+- **Visual Assets**: Replaced hero section background with custom AI visualization image (image_1762664999271.png)
+- **Contact Information**: Updated all contact details across the site:
+  - Address: Shivam Vihar Colony, Beur, Phulwari, Patna-800002, Bihar, India
+  - Email: info@veridantai.in
+  - Phone: +91-8550970101
+  - Website: www.veridantai.in
+- **New Content Sections**:
+  - Industries We Serve section showcasing 6 key sectors with statistics
+  - Security & Compliance section highlighting ISO 27001 and SOC 2 certifications
+- **Navigation Improvements**: All navigation links converted from placeholders to functional scroll-to-section buttons
+- **Testing Coverage**: Comprehensive data-testid attributes added to all interactive elements for e2e testing
+- **Tailwind CSS Fixes**: Replaced dynamic color classes with explicit class names to prevent purging in production builds
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/use-language";
+import demoImagePath from "@assets/image_1762664999271.png";
 
 export default function HeroSection() {
   const { t } = useLanguage();
@@ -63,11 +64,11 @@ export default function HeroSection() {
           </div>
           
           <div className="relative animate-float">
-            {/* Product Demo Video Thumbnail */}
+            {/* AI Visualization Demo */}
             <div className="relative group cursor-pointer">
               <img 
-                src="https://images.unsplash.com/photo-1677442136019-21780ecad995?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
-                alt="VeridantAI Platform Demo" 
+                src={demoImagePath}
+                alt="VeridantAI Platform - AI Visualization Demo" 
                 className="rounded-2xl shadow-2xl w-full h-auto transition-transform duration-300 group-hover:scale-105" 
               />
               
@@ -79,8 +80,8 @@ export default function HeroSection() {
               </div>
               
               {/* Demo Badge */}
-              <div className="absolute top-4 left-4 bg-white/95 text-primary px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
-                🎬 Watch Demo
+              <div className="absolute top-4 left-4 bg-white/95 px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                <span className="text-slate-600">Veridant</span><span className="text-[#0EA5E9]">AI</span> <span className="text-primary">Demo</span>
               </div>
               
               {/* Hover Overlay */}

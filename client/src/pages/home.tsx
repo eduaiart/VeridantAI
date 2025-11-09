@@ -2,6 +2,8 @@ import Header from "@/components/header";
 import HeroSection from "@/components/hero-section";
 import ServicesSection from "@/components/services-section";
 import AboutSection from "@/components/about-section";
+import IndustriesSection from "@/components/industries-section";
+import SecurityComplianceSection from "@/components/security-compliance-section";
 import ContactSection from "@/components/contact-section";
 import Footer from "@/components/footer";
 import { useLanguage } from "@/hooks/use-language";
@@ -329,6 +331,8 @@ export default function Home() {
 
       <AboutSection />
       
+      <IndustriesSection />
+      
       {/* Why Choose Section */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -385,6 +389,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <SecurityComplianceSection />
 
       {/* CTA Section */}
       <section className="py-20 hero-gradient text-white">

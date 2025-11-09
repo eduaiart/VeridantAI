@@ -100,8 +100,10 @@ export default function ContactSection() {
                 <div>
                   <h4 className="font-semibold mb-1">Office Location</h4>
                   <p className="text-muted-foreground">
-                    VERIDANTAI SOLUTION PRIVATE LIMITED,Patna, Bihar 800002,
-                    India
+                    VERIDANTAI SOLUTION PRIVATE LIMITED<br />
+                    Shivam Vihar Colony, Beur<br />
+                    Phulwari, Patna-800002<br />
+                    Bihar, India
                   </p>
                 </div>
               </div>
@@ -112,7 +114,9 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h4 className="font-semibold mb-1">Email</h4>
-                  <p className="text-muted-foreground">contact@veridantai.in</p>
+                  <a href="mailto:info@veridantai.in" className="text-muted-foreground hover:text-foreground transition-colors">
+                    info@veridantai.in
+                  </a>
                 </div>
               </div>
 
@@ -122,7 +126,9 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h4 className="font-semibold mb-1">Phone</h4>
-                  <p className="text-muted-foreground">+91 85509 70101</p>
+                  <a href="tel:+918550970101" className="text-muted-foreground hover:text-foreground transition-colors">
+                    +91-8550970101
+                  </a>
                 </div>
               </div>
             </div>

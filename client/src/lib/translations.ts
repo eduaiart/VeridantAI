@@ -124,7 +124,11 @@ export const translations = {
       projects: "Projects Delivered", 
       experts: "AI Experts",
       proudlyIndian: "Proudly Indian",
-      proudlyIndianDesc: "Headquartered in Patna, Bihar, we understand the unique challenges and opportunities in the Indian market."
+      proudlyIndianDesc: "Headquartered in Patna, Bihar, we understand the unique challenges and opportunities in the Indian market.",
+      address: "Shivam Vihar Colony, Beur, Phulwari, Patna-800002, Bihar, India",
+      email: "info@veridantai.in",
+      phone: "+91-8550970101",
+      website: "www.veridantai.in"
     },
     
     // Why Choose
@@ -342,7 +346,11 @@ export const translations = {
       projects: "परियोजनाएं वितरित",
       experts: "AI विशेषज्ञ",
       proudlyIndian: "गर्वपूर्ण भारतीय",
-      proudlyIndianDesc: "पटना, बिहार में मुख्यालय के साथ, हम भारतीय बाजार की अनूठी चुनौतियों और अवसरों को समझते हैं।"
+      proudlyIndianDesc: "पटना, बिहार में मुख्यालय के साथ, हम भारतीय बाजार की अनूठी चुनौतियों और अवसरों को समझते हैं।",
+      address: "शिवम विहार कॉलोनी, ब्यौर, फुलवारी, पटना-800002, बिहार, भारत",
+      email: "info@veridantai.in",
+      phone: "+91-8550970101",
+      website: "www.veridantai.in"
     },
     
     // Why Choose

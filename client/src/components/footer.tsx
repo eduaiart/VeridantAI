@@ -1,4 +1,5 @@
-import { Twitter, Linkedin, Instagram } from "lucide-react";
+import { Twitter, Linkedin, Instagram, Phone, Mail, Globe } from "lucide-react";
+import logoPath from "@assets/Logo_1762664773643.jpg";
 
 export default function Footer() {
   return (
@@ -7,20 +8,39 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-6">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-lg hero-gradient flex items-center justify-center">
-                <span className="text-white font-bold text-lg">V</span>
-              </div>
-              <span className="font-bold text-xl">VeridantAI</span>
+            <div className="flex items-center space-x-3">
+              <img src={logoPath} alt="VeridantAI Logo" className="h-10 w-10" />
+              <span className="font-bold text-xl">
+                <span className="text-slate-600">Veridant</span>
+                <span className="text-[#0EA5E9]">AI</span>
+              </span>
             </div>
             <p className="text-muted-foreground">
               Innovating daily life through AI solutions.
             </p>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <p>VeridantAI Solution Private Limited</p>
-              <p>Patna, Bihar 800001</p>
-              <p>India</p>
-              <p>contact@veridantai.in</p>
+              <p className="font-semibold text-foreground">VERIDANTAI SOLUTION PRIVATE LIMITED</p>
+              <p>Shivam Vihar Colony, Beur</p>
+              <p>Phulwari, Patna-800002</p>
+              <p>Bihar, India</p>
+              <div className="flex items-center space-x-2 pt-2">
+                <Mail className="w-4 h-4" />
+                <a href="mailto:info@veridantai.in" className="hover:text-foreground transition-colors">
+                  info@veridantai.in
+                </a>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Phone className="w-4 h-4" />
+                <a href="tel:+918550970101" className="hover:text-foreground transition-colors">
+                  +91-8550970101
+                </a>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Globe className="w-4 h-4" />
+                <a href="https://www.veridantai.in" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+                  www.veridantai.in
+                </a>
+              </div>
             </div>
           </div>
 

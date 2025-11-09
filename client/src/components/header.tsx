@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import LanguageToggle from "@/components/language-toggle";
+import logoPath from "@assets/Logo_1762664773643.jpg";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -18,12 +19,11 @@ export default function Header() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-lg hero-gradient flex items-center justify-center">
-              <span className="text-white font-bold text-lg">V</span>
-            </div>
-            <span className="font-bold text-xl text-foreground">
-              VeridantAI
+          <div className="flex items-center space-x-3">
+            <img src={logoPath} alt="VeridantAI Logo" className="h-10 w-10" />
+            <span className="font-bold text-xl">
+              <span className="text-slate-600">Veridant</span>
+              <span className="text-[#0EA5E9]">AI</span>
             </span>
           </div>
 

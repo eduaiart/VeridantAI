@@ -62,25 +62,39 @@ export default function IndustriesSection() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {industries.map((industry, index) => (
-            <div
-              key={index}
-              className="bg-card p-8 rounded-2xl shadow-lg border border-border hover:shadow-xl transition-all duration-300 group hover:scale-105"
-              data-testid={`card-industry-${industry.title.toLowerCase().replace(/ /g, '-')}`}
-            >
-              <div className={`w-16 h-16 rounded-xl bg-${industry.color}-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                <industry.icon className={`w-8 h-8 text-${industry.color}-600`} />
+          {industries.map((industry, index) => {
+            const bgColorClass = industry.color === 'blue' ? 'bg-blue-100' :
+                                 industry.color === 'green' ? 'bg-green-100' :
+                                 industry.color === 'purple' ? 'bg-purple-100' :
+                                 industry.color === 'indigo' ? 'bg-indigo-100' :
+                                 industry.color === 'amber' ? 'bg-amber-100' : 'bg-pink-100';
+            
+            const textColorClass = industry.color === 'blue' ? 'text-blue-600' :
+                                   industry.color === 'green' ? 'text-green-600' :
+                                   industry.color === 'purple' ? 'text-purple-600' :
+                                   industry.color === 'indigo' ? 'text-indigo-600' :
+                                   industry.color === 'amber' ? 'text-amber-600' : 'text-pink-600';
+            
+            return (
+              <div
+                key={index}
+                className="bg-card p-8 rounded-2xl shadow-lg border border-border hover:shadow-xl transition-all duration-300 group hover:scale-105"
+                data-testid={`card-industry-${industry.title.toLowerCase().replace(/ /g, '-')}`}
+              >
+                <div className={`w-16 h-16 rounded-xl ${bgColorClass} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                  <industry.icon className={`w-8 h-8 ${textColorClass}`} />
+                </div>
+                <h3 className="text-xl font-bold mb-3">{industry.title}</h3>
+                <p className="text-muted-foreground mb-4 leading-relaxed">
+                  {industry.description}
+                </p>
+                <div className="flex items-center space-x-2 text-sm font-semibold text-primary">
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  <span>{industry.stats}</span>
+                </div>
               </div>
-              <h3 className="text-xl font-bold mb-3">{industry.title}</h3>
-              <p className="text-muted-foreground mb-4 leading-relaxed">
-                {industry.description}
-              </p>
-              <div className="flex items-center space-x-2 text-sm font-semibold text-primary">
-                <div className="w-2 h-2 bg-primary rounded-full"></div>
-                <span>{industry.stats}</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="mt-16 text-center">

@@ -350,37 +350,43 @@ export default function Home() {
               {
                 title: "Cross-Domain Expertise",
                 description: "Unlike niche providers, we bring comprehensive expertise across education, healthcare, finance, and everyday applications.",
-                color: "purple"
+                bgColor: "bg-purple-100",
+                textColor: "text-purple-600"
               },
               {
                 title: "AI at the Core", 
                 description: "Our products are powered by state-of-the-art artificial intelligence models, ensuring smarter, adaptive, and future-proof platforms.",
-                color: "blue"
+                bgColor: "bg-blue-100",
+                textColor: "text-blue-600"
               },
               {
                 title: "Scalable & Accessible",
                 description: "Every solution is designed for scalability, from small organizations to global enterprises, accessible regardless of technical background.",
-                color: "green"
+                bgColor: "bg-green-100",
+                textColor: "text-green-600"
               },
               {
                 title: "Continuous Innovation",
                 description: "We continuously research and implement the latest technological advancements to keep our solutions cutting-edge.",
-                color: "indigo"
+                bgColor: "bg-indigo-100",
+                textColor: "text-indigo-600"
               },
               {
                 title: "Human-Centered Design",
                 description: "Our focus remains on solving real problems for real people, ensuring technology serves its ultimate purpose: improving quality of life.",
-                color: "pink"
+                bgColor: "bg-pink-100",
+                textColor: "text-pink-600"
               },
               {
                 title: "Ethical AI Practices",
                 description: "We ensure all solutions respect user privacy, data security, and transparency, building responsible AI systems.",
-                color: "yellow"
+                bgColor: "bg-yellow-100",
+                textColor: "text-yellow-600"
               }
             ].map((item, index) => (
-              <div key={index} className="bg-card p-8 rounded-2xl shadow-lg border border-border hover:shadow-xl transition-all duration-300">
-                <div className={`w-16 h-16 rounded-xl bg-${item.color}-100 flex items-center justify-center mb-6`}>
-                  <div className={`w-8 h-8 text-${item.color}-600`}>⚡</div>
+              <div key={index} className="bg-card p-8 rounded-2xl shadow-lg border border-border hover:shadow-xl transition-all duration-300" data-testid={`card-why-choose-${index}`}>
+                <div className={`w-16 h-16 rounded-xl ${item.bgColor} flex items-center justify-center mb-6`}>
+                  <div className={`w-8 h-8 ${item.textColor}`}>⚡</div>
                 </div>
                 <h3 className="text-xl font-bold mb-4">{item.title}</h3>
                 <p className="text-muted-foreground">{item.description}</p>

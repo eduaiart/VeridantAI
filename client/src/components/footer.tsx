@@ -49,29 +49,29 @@ export default function Footer() {
             <h4 className="font-semibold text-lg">Solutions</h4>
             <ul className="space-y-3 text-muted-foreground">
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <button onClick={() => document.getElementById('solutions')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors text-left" data-testid="link-footer-education">
                   Education Technology
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <button onClick={() => document.getElementById('solutions')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors text-left" data-testid="link-footer-healthcare">
                   Healthcare Solutions
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <button onClick={() => document.getElementById('solutions')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors text-left" data-testid="link-footer-fintech">
                   Financial Technology
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <button onClick={() => document.getElementById('solutions')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors text-left" data-testid="link-footer-ai-software">
                   AI Software
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <button onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors text-left" data-testid="link-footer-custom-dev">
                   Custom Development
-                </a>
+                </button>
               </li>
             </ul>
           </div>
@@ -81,29 +81,29 @@ export default function Footer() {
             <h4 className="font-semibold text-lg">Company</h4>
             <ul className="space-y-3 text-muted-foreground">
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <button onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors text-left" data-testid="link-footer-about">
                   About Us
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <button onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors text-left" data-testid="link-footer-team">
                   Our Team
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <button onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors text-left" data-testid="link-footer-careers">
                   Careers
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <button onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors text-left" data-testid="link-footer-news">
                   News & Updates
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <button onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors text-left" data-testid="link-footer-contact">
                   Contact
-                </a>
+                </button>
               </li>
             </ul>
           </div>
@@ -113,24 +113,24 @@ export default function Footer() {
             <h4 className="font-semibold text-lg">Legal</h4>
             <ul className="space-y-3 text-muted-foreground">
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <button onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors text-left" data-testid="link-footer-privacy">
                   Privacy Policy
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <button onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors text-left" data-testid="link-footer-terms">
                   Terms of Service
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <button onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors text-left" data-testid="link-footer-security">
                   Data Security
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <button onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors text-left" data-testid="link-footer-compliance">
                   Compliance
-                </a>
+                </button>
               </li>
             </ul>
           </div>
@@ -142,24 +142,30 @@ export default function Footer() {
               © 2025 VERIDANTAI SOLUTION PRIVATE LIMITED. All rights reserved.
             </p>
             <div className="flex items-center space-x-6">
-              <a
-                href="#"
+              <button
+                onClick={() => window.open('https://twitter.com/veridantai', '_blank')}
                 className="text-muted-foreground hover:text-foreground transition-colors"
+                data-testid="link-social-twitter"
+                aria-label="Twitter"
               >
                 <Twitter className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
+              </button>
+              <button
+                onClick={() => window.open('https://linkedin.com/company/veridantai', '_blank')}
                 className="text-muted-foreground hover:text-foreground transition-colors"
+                data-testid="link-social-linkedin"
+                aria-label="LinkedIn"
               >
                 <Linkedin className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
+              </button>
+              <button
+                onClick={() => window.open('https://instagram.com/veridantai', '_blank')}
                 className="text-muted-foreground hover:text-foreground transition-colors"
+                data-testid="link-social-instagram"
+                aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
-              </a>
+              </button>
             </div>
           </div>
         </div>

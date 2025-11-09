@@ -57,36 +57,41 @@ export default function Header() {
               {/* Dropdown Menu */}
               <div className="absolute top-full left-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div className="py-2">
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  <button
+                    onClick={() => scrollToSection("solutions")}
+                    className="block w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                    data-testid="link-resources-case-studies"
                   >
                     {t("navigation.caseStudies")}
-                  </a>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  </button>
+                  <button
+                    onClick={() => scrollToSection("about")}
+                    className="block w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                    data-testid="link-resources-whitepapers"
                   >
                     {t("navigation.whitepapers")}
-                  </a>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  </button>
+                  <button
+                    onClick={() => scrollToSection("about")}
+                    className="block w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                    data-testid="link-resources-blog"
                   >
                     {t("navigation.blog")}
-                  </a>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  </button>
+                  <button
+                    onClick={() => scrollToSection("solutions")}
+                    className="block w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                    data-testid="link-resources-documentation"
                   >
                     {t("navigation.documentation")}
-                  </a>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  </button>
+                  <button
+                    onClick={() => scrollToSection("contact")}
+                    className="block w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                    data-testid="link-resources-support"
                   >
                     {t("navigation.support")}
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
@@ -151,30 +156,34 @@ export default function Header() {
                   {t("navigation.resources")}
                 </div>
                 <div className="pl-4 space-y-2">
-                  <a
-                    href="#"
-                    className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  <button
+                    onClick={() => scrollToSection("solutions")}
+                    className="block w-full text-left text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    data-testid="link-mobile-case-studies"
                   >
                     {t("navigation.caseStudies")}
-                  </a>
-                  <a
-                    href="#"
-                    className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  </button>
+                  <button
+                    onClick={() => scrollToSection("about")}
+                    className="block w-full text-left text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    data-testid="link-mobile-blog"
                   >
                     {t("navigation.blog")}
-                  </a>
-                  <a
-                    href="#"
-                    className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  </button>
+                  <button
+                    onClick={() => scrollToSection("solutions")}
+                    className="block w-full text-left text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    data-testid="link-mobile-documentation"
                   >
                     {t("navigation.documentation")}
-                  </a>
-                  <a
-                    href="#"
-                    className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  </button>
+                  <button
+                    onClick={() => scrollToSection("contact")}
+                    className="block w-full text-left text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    data-testid="link-mobile-support"
                   >
                     {t("navigation.support")}
-                  </a>
+                  </button>
                 </div>
               </div>
               <button

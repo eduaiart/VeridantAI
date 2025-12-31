@@ -438,26 +438,30 @@ export async function generateOfferLetterPDF(offerLetter: OfferLetter, baseUrl: 
       doc.moveDown(0.5);
       doc.text(`Degree/Program: ${fieldOfStudy}`);
 
+      // Calculate safe positioning within printable area (avoid margin boundaries)
+      const printableBottom = doc.page.height - doc.page.margins.bottom;
+      const qrY = printableBottom - 80;
+      const footerY = printableBottom - 25;
+
       // QR Code and Verification - positioned at bottom left of page 3
       const qrBuffer = Buffer.from(qrCodeDataUrl.split(",")[1], "base64");
-      const qrY = doc.page.height - 130;
       doc.image(qrBuffer, 50, qrY, { width: 60 });
       
-      doc.fontSize(8)
-         .fillColor("#64748B")
-         .text(`Offer No: ${offerLetter.offerNumber}`, 120, qrY + 15, { lineBreak: false });
-      doc.fontSize(8)
-         .fillColor("#64748B")
-         .text("Scan QR code to verify", 120, qrY + 27, { lineBreak: false });
+      // QR text positioned manually next to QR code
+      doc.fontSize(8).fillColor("#64748B");
+      doc.text(`Offer No: ${offerLetter.offerNumber}`, 120, qrY + 15, { lineBreak: false });
+      doc.text("Scan QR code to verify", 120, qrY + 27, { lineBreak: false });
 
-      // Footer - fixed position at bottom of page 3
-      const footerY = doc.page.height - 50;
-      doc.fontSize(8)
-         .fillColor("#94a3b8")
-         .text(COMPANY_NAME, 50, footerY, { align: "center", width: doc.page.width - 100, lineBreak: false });
-      doc.fontSize(8)
-         .fillColor("#94a3b8")
-         .text(`CIN: ${COMPANY_CIN} | Website: ${COMPANY_WEBSITE}`, 50, footerY + 12, { align: "center", width: doc.page.width - 100, lineBreak: false });
+      // Footer - centered manually using widthOfString
+      doc.fontSize(8).fillColor("#94a3b8");
+      const companyText = COMPANY_NAME;
+      const cinText = `CIN: ${COMPANY_CIN} | Website: ${COMPANY_WEBSITE}`;
+      const companyTextWidth = doc.widthOfString(companyText);
+      const cinTextWidth = doc.widthOfString(cinText);
+      const pageCenter = doc.page.width / 2;
+      
+      doc.text(companyText, pageCenter - companyTextWidth / 2, footerY, { lineBreak: false });
+      doc.text(cinText, pageCenter - cinTextWidth / 2, footerY + 12, { lineBreak: false });
 
       doc.end();
     } catch (error) {

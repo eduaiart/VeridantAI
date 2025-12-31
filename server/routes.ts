@@ -537,13 +537,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create certificate (admin only)
   app.post("/api/certificates", authMiddleware, adminMiddleware, async (req, res) => {
     try {
+      const { applicationId } = req.body;
+      
+      if (!applicationId) {
+        return res.status(400).json({ error: "Application ID is required" });
+      }
+      
+      // Fetch application details
+      const application = await storage.getApplication(applicationId);
+      if (!application) {
+        return res.status(404).json({ error: "Application not found" });
+      }
+      
+      // Check if application is selected or completed
+      if (application.status !== "selected" && application.status !== "completed") {
+        return res.status(400).json({ error: "Application must be selected or completed first" });
+      }
+      
+      // Fetch program details for title
+      const program = await storage.getProgram(application.programId);
+      const programTitle = program?.title || "Internship Program";
+      
+      // Create certificate with application data
       const certificate = await storage.createCertificate({
-        ...req.body,
+        applicationId,
+        userId: application.userId || undefined,
+        recipientName: `${application.firstName} ${application.lastName}`,
+        programTitle,
+        certificateType: "completion",
+        issueDate: new Date(),
+        validFrom: new Date(),
+        validTo: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year validity
+        grade: "Excellent",
+        mentorName: "Program Coordinator",
         issuedBy: req.user!.userId
       });
       
-      res.json({ success: true, certificate });
+      res.json(certificate);
     } catch (error) {
+      console.error("Error creating certificate:", error);
       res.status(500).json({ error: "Failed to create certificate" });
     }
   });
@@ -615,13 +647,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create offer letter (admin only)
   app.post("/api/offer-letters", authMiddleware, adminMiddleware, async (req, res) => {
     try {
+      const { applicationId } = req.body;
+      
+      if (!applicationId) {
+        return res.status(400).json({ error: "Application ID is required" });
+      }
+      
+      // Fetch application details
+      const application = await storage.getApplication(applicationId);
+      if (!application) {
+        return res.status(404).json({ error: "Application not found" });
+      }
+      
+      // Check if application is selected
+      if (application.status !== "selected" && application.status !== "completed") {
+        return res.status(400).json({ error: "Application must be selected first" });
+      }
+      
+      // Fetch program details for title
+      const program = await storage.getProgram(application.programId);
+      const programTitle = program?.title || "Internship Program";
+      
+      // Create offer letter with application data
       const offerLetter = await storage.createOfferLetter({
-        ...req.body,
-        issuedBy: req.user!.userId
+        applicationId,
+        userId: application.userId || undefined,
+        recipientName: `${application.firstName} ${application.lastName}`,
+        programTitle,
+        position: `${programTitle} Intern`,
+        department: "Technology",
+        stipend: "As per company policy",
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 3 months from now
+        reportingTo: "Program Coordinator",
+        location: "Remote/Hybrid",
+        termsAndConditions: "Standard internship terms apply. Details will be provided during onboarding.",
+        issuedBy: req.user!.userId,
+        status: "pending"
       });
       
-      res.json({ success: true, offerLetter });
+      res.json(offerLetter);
     } catch (error) {
+      console.error("Error creating offer letter:", error);
       res.status(500).json({ error: "Failed to create offer letter" });
     }
   });

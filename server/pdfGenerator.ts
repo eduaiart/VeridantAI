@@ -438,22 +438,21 @@ export async function generateOfferLetterPDF(offerLetter: OfferLetter, baseUrl: 
       doc.moveDown(0.5);
       doc.text(`Degree/Program: ${fieldOfStudy}`);
 
-      // QR Code and Verification
-      doc.moveDown(2);
+      // QR Code and Verification - positioned at bottom left
       const qrBuffer = Buffer.from(qrCodeDataUrl.split(",")[1], "base64");
-      doc.image(qrBuffer, 50, doc.y, { width: 60 });
+      const qrY = doc.page.height - 120;
+      doc.image(qrBuffer, 50, qrY, { width: 60 });
       
       doc.fontSize(8)
          .fillColor("#64748B")
-         .text(`Offer No: ${offerLetter.offerNumber}`, 120, doc.y - 50)
-         .text("Scan QR code to verify this document", 120)
-         .text(`Verification URL: ${verificationUrl}`, 120);
+         .text(`Offer No: ${offerLetter.offerNumber}`, 120, qrY + 10)
+         .text("Scan QR code to verify", 120, qrY + 22);
 
-      // Footer
+      // Footer - fixed position at bottom
       doc.fontSize(8)
          .fillColor("#94a3b8")
-         .text(COMPANY_NAME, 50, doc.page.height - 50, { align: "center" })
-         .text(`CIN: ${COMPANY_CIN} | Website: ${COMPANY_WEBSITE}`, { align: "center" });
+         .text(COMPANY_NAME, 50, doc.page.height - 40, { align: "center", width: doc.page.width - 100 })
+         .text(`CIN: ${COMPANY_CIN} | Website: ${COMPANY_WEBSITE}`, 50, doc.page.height - 28, { align: "center", width: doc.page.width - 100 });
 
       doc.end();
     } catch (error) {

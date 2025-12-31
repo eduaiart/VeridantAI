@@ -626,6 +626,21 @@ export default function AdminDashboard() {
                         <p className="text-sm text-muted-foreground">Program</p>
                         <p className="font-medium">{selectedApplication.programTitle}</p>
                       </div>
+                      <div className="col-span-2">
+                        <p className="text-sm text-muted-foreground">Address</p>
+                        <p className="font-medium">
+                          {selectedApplication.address ? (
+                            <>
+                              {selectedApplication.address}
+                              {selectedApplication.city && `, ${selectedApplication.city}`}
+                              {selectedApplication.state && `, ${selectedApplication.state}`}
+                              {selectedApplication.pincode && ` - ${selectedApplication.pincode}`}
+                            </>
+                          ) : (
+                            <span className="text-muted-foreground italic">Not provided</span>
+                          )}
+                        </p>
+                      </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Qualification</p>
                         <p className="font-medium">{selectedApplication.highestQualification}</p>

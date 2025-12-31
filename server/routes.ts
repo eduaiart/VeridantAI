@@ -300,7 +300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         portfolioUrl: applicationData.portfolioUrl || null,
         githubUrl: applicationData.githubUrl || null,
         coverLetter: applicationData.coverLetter || null,
-        resumeUrl: null,
+        resumeUrl: applicationData.resumeUrl || null,
         dateOfBirth: null,
         gender: null,
         address: null,

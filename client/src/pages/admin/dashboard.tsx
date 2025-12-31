@@ -146,6 +146,70 @@ export default function AdminDashboard() {
     },
   });
 
+  const generateCertificateMutation = useMutation({
+    mutationFn: async (applicationId: string) => {
+      const response = await fetch("/api/certificates", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ applicationId }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to generate certificate");
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Certificate Generated",
+        description: `Certificate ${data.certificateNumber} has been created.`,
+      });
+      window.open(`/api/certificates/${data.id}/download`, "_blank");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const generateOfferLetterMutation = useMutation({
+    mutationFn: async (applicationId: string) => {
+      const response = await fetch("/api/offer-letters", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ applicationId }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to generate offer letter");
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Offer Letter Generated",
+        description: `Offer letter ${data.offerNumber} has been created.`,
+      });
+      window.open(`/api/offer-letters/${data.id}/download`, "_blank");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -639,6 +703,40 @@ export default function AdminDashboard() {
                         </a>
                       )}
                     </div>
+
+                    {/* Generate Certificate/Offer Letter - Only for selected/completed status */}
+                    {(selectedApplication.status === "selected" || selectedApplication.status === "completed") && (
+                      <div className="space-y-3 pt-4 border-t">
+                        <p className="text-sm font-medium flex items-center gap-2">
+                          <Award className="w-4 h-4" />
+                          Generate Documents
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button 
+                            onClick={() => generateOfferLetterMutation.mutate(selectedApplication.id)}
+                            disabled={generateOfferLetterMutation.isPending}
+                            className="gap-2"
+                            data-testid="button-generate-offer-letter"
+                          >
+                            <FileText className="w-4 h-4" />
+                            {generateOfferLetterMutation.isPending ? "Generating..." : "Generate Offer Letter"}
+                          </Button>
+                          <Button 
+                            variant="secondary"
+                            onClick={() => generateCertificateMutation.mutate(selectedApplication.id)}
+                            disabled={generateCertificateMutation.isPending}
+                            className="gap-2"
+                            data-testid="button-generate-certificate"
+                          >
+                            <Award className="w-4 h-4" />
+                            {generateCertificateMutation.isPending ? "Generating..." : "Generate Certificate"}
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          PDFs will include QR codes for verification at veridantai.in/verify
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>

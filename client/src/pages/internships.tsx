@@ -58,7 +58,7 @@ export default function InternshipsPage() {
   const { toast } = useToast();
 
   const { data: programs = [], isLoading } = useQuery<InternshipProgram[]>({
-    queryKey: ["/api/programs", { active: true }],
+    queryKey: ["/api/programs"],
   });
 
   const form = useForm<ApplicationFormData>({

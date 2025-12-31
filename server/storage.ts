@@ -382,7 +382,7 @@ VeridantAI HR Team`,
     const adminUser: User = {
       id: randomUUID(),
       username: "admin",
-      password: "$2b$10$XQlV5FhBUDPFE9Xe6OVjOuMXKVMXYL1Ae6sR0E9hDPYbNmKNJVCBe", // "admin123" hashed
+      password: "$2b$10$76U8OJnk3JKWcAsyZwyYJu7Qh000OAJjC0BPbkGWksQw4/MtF0jqW", // "admin123" hashed
       email: "admin@veridantai.in",
       role: "admin",
       firstName: "Admin",

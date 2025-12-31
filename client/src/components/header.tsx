@@ -125,14 +125,18 @@ export default function Header() {
           {/* CTA Button & Mobile Menu */}
           <div className="flex items-center space-x-3">
             <LanguageToggle />
-            <Button
-              onClick={() => scrollToSection("contact")}
-              className="hidden lg:inline-flex bg-gradient-to-r from-primary to-accent text-white hover:from-primary/90 hover:to-accent/90 px-6 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 border-0"
-              data-testid="button-get-demo"
-            >
-              <span className="mr-2">🚀</span>
-              {t("navigation.bookDemo")}
-            </Button>
+            <a href="/login" data-testid="link-login">
+              <Button variant="ghost" className="hidden md:inline-flex">
+                Login
+              </Button>
+            </a>
+            <a href="/register" data-testid="link-register-header">
+              <Button
+                className="hidden lg:inline-flex bg-gradient-to-r from-primary to-accent text-white hover:from-primary/90 hover:to-accent/90 px-6 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 border-0"
+              >
+                Register
+              </Button>
+            </a>
 
             {/* Mobile menu button */}
             <Button
@@ -218,14 +222,18 @@ export default function Header() {
               >
                 Internships
               </a>
-              <Button
-                onClick={() => scrollToSection("contact")}
-                className="bg-gradient-to-r from-primary to-accent text-white hover:from-primary/90 hover:to-accent/90 w-full font-semibold shadow-lg"
-                data-testid="button-mobile-demo"
-              >
-                <span className="mr-2">🚀</span>
-                {t("navigation.bookDemo")}
-              </Button>
+              <div className="flex gap-2 pt-2">
+                <a href="/login" className="flex-1">
+                  <Button variant="outline" className="w-full" data-testid="button-mobile-login">
+                    Login
+                  </Button>
+                </a>
+                <a href="/register" className="flex-1">
+                  <Button className="w-full bg-gradient-to-r from-primary to-accent text-white" data-testid="button-mobile-register">
+                    Register
+                  </Button>
+                </a>
+              </div>
             </nav>
           </div>
         )}

@@ -162,12 +162,26 @@ export default function AdminDashboard() {
       }
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast({
         title: "Certificate Generated",
         description: `Certificate ${data.certificateNumber} has been created.`,
       });
-      window.open(`/api/certificates/${data.id}/download`, "_blank");
+      // Download with authentication
+      const response = await fetch(`/api/certificates/${data.id}/download`, {
+        headers: getAuthHeaders(),
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `certificate-${data.certificateNumber}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -194,12 +208,26 @@ export default function AdminDashboard() {
       }
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast({
         title: "Offer Letter Generated",
         description: `Offer letter ${data.offerNumber} has been created.`,
       });
-      window.open(`/api/offer-letters/${data.id}/download`, "_blank");
+      // Download with authentication
+      const response = await fetch(`/api/offer-letters/${data.id}/download`, {
+        headers: getAuthHeaders(),
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `offer-letter-${data.offerNumber}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      }
     },
     onError: (error: Error) => {
       toast({

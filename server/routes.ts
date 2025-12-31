@@ -308,10 +308,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         panCardUrl: applicationData.panCardUrl || null,
         dateOfBirth: null,
         gender: null,
-        address: null,
-        city: null,
-        state: null,
-        pincode: null
+        address: applicationData.address || null,
+        city: applicationData.city || null,
+        state: applicationData.state || null,
+        pincode: applicationData.pincode || null
       });
       
       res.json({ 

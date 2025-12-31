@@ -316,7 +316,15 @@ export default function AdminDashboard() {
                             <p className="text-sm text-muted-foreground">{app.programTitle}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
+                          {app.resumeUrl && (
+                            <a href={app.resumeUrl} target="_blank" rel="noopener noreferrer" download>
+                              <Button variant="outline" size="sm" className="gap-1" data-testid={`button-download-resume-${app.id}`}>
+                                <Download className="w-4 h-4" />
+                                Resume
+                              </Button>
+                            </a>
+                          )}
                           <Badge className={statusColors[app.status || "submitted"]}>
                             {(app.status || "submitted").replace(/_/g, " ").toUpperCase()}
                           </Badge>

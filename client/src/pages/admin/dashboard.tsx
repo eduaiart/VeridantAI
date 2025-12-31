@@ -527,15 +527,68 @@ export default function AdminDashboard() {
                       </div>
                     )}
                     
-                    <div className="flex flex-wrap gap-2 pt-4">
-                      {selectedApplication.resumeUrl && (
-                        <a href={selectedApplication.resumeUrl} target="_blank" rel="noopener noreferrer" download>
-                          <Button variant="default" size="sm" className="gap-1" data-testid="button-download-resume">
-                            <Download className="w-4 h-4" />
-                            Download Resume
-                          </Button>
-                        </a>
+                    {/* Document Downloads */}
+                    <div className="space-y-3 pt-4 border-t">
+                      <p className="text-sm font-medium">Documents</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedApplication.resumeUrl && (
+                          <a href={selectedApplication.resumeUrl} target="_blank" rel="noopener noreferrer" download>
+                            <Button variant="default" size="sm" className="gap-1" data-testid="button-download-resume">
+                              <Download className="w-4 h-4" />
+                              Resume
+                            </Button>
+                          </a>
+                        )}
+                        {selectedApplication.collegeIdUrl && (
+                          <a href={selectedApplication.collegeIdUrl} target="_blank" rel="noopener noreferrer" download>
+                            <Button variant="secondary" size="sm" className="gap-1" data-testid="button-download-college-id">
+                              <Download className="w-4 h-4" />
+                              College ID
+                            </Button>
+                          </a>
+                        )}
+                        {selectedApplication.bonafideCertificateUrl && (
+                          <a href={selectedApplication.bonafideCertificateUrl} target="_blank" rel="noopener noreferrer" download>
+                            <Button variant="secondary" size="sm" className="gap-1" data-testid="button-download-bonafide">
+                              <Download className="w-4 h-4" />
+                              Bonafide
+                            </Button>
+                          </a>
+                        )}
+                        {selectedApplication.governmentIdUrl && (
+                          <a href={selectedApplication.governmentIdUrl} target="_blank" rel="noopener noreferrer" download>
+                            <Button variant="secondary" size="sm" className="gap-1" data-testid="button-download-govt-id">
+                              <Download className="w-4 h-4" />
+                              Govt ID
+                            </Button>
+                          </a>
+                        )}
+                        {selectedApplication.marksheetUrl && (
+                          <a href={selectedApplication.marksheetUrl} target="_blank" rel="noopener noreferrer" download>
+                            <Button variant="secondary" size="sm" className="gap-1" data-testid="button-download-marksheet">
+                              <Download className="w-4 h-4" />
+                              Marksheet
+                            </Button>
+                          </a>
+                        )}
+                        {selectedApplication.panCardUrl && (
+                          <a href={selectedApplication.panCardUrl} target="_blank" rel="noopener noreferrer" download>
+                            <Button variant="secondary" size="sm" className="gap-1" data-testid="button-download-pan">
+                              <Download className="w-4 h-4" />
+                              PAN Card
+                            </Button>
+                          </a>
+                        )}
+                      </div>
+                      {!selectedApplication.resumeUrl && !selectedApplication.collegeIdUrl && 
+                       !selectedApplication.bonafideCertificateUrl && !selectedApplication.governmentIdUrl && 
+                       !selectedApplication.marksheetUrl && !selectedApplication.panCardUrl && (
+                        <p className="text-sm text-muted-foreground">No documents uploaded</p>
                       )}
+                    </div>
+
+                    {/* External Links */}
+                    <div className="flex flex-wrap gap-2 pt-2">
                       {selectedApplication.linkedinUrl && (
                         <a href={selectedApplication.linkedinUrl} target="_blank" rel="noopener noreferrer">
                           <Button variant="outline" size="sm">LinkedIn</Button>

@@ -82,36 +82,49 @@ export default function InternshipsPage() {
       githubUrl: "",
       coverLetter: "",
       resumeUrl: "",
+      collegeIdUrl: "",
+      bonafideCertificateUrl: "",
+      governmentIdUrl: "",
+      marksheetUrl: "",
+      panCardUrl: "",
     },
   });
 
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<Record<string, string>>({});
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDocumentUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    fieldName: keyof ApplicationFormData,
+    label: string,
+    allowImages: boolean = false
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "File too large",
-        description: "Resume must be less than 5MB",
+        description: `${label} must be less than 5MB`,
         variant: "destructive",
       });
       return;
     }
 
-    const allowedTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    const pdfTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    const imageTypes = ["image/jpeg", "image/png", "image/jpg"];
+    const allowedTypes = allowImages ? [...pdfTypes, ...imageTypes] : pdfTypes;
+    
     if (!allowedTypes.includes(file.type)) {
       toast({
         title: "Invalid file type",
-        description: "Please upload a PDF or Word document",
+        description: allowImages ? "Please upload a PDF, Word document, or image" : "Please upload a PDF or Word document",
         variant: "destructive",
       });
       return;
     }
 
-    setIsUploading(true);
+    setUploadingField(fieldName);
     try {
       const response = await fetch("/api/uploads/request-url", {
         method: "POST",
@@ -135,20 +148,20 @@ export default function InternshipsPage() {
 
       if (!uploadResponse.ok) throw new Error("Failed to upload file");
 
-      form.setValue("resumeUrl", objectPath);
-      setUploadedFileName(file.name);
+      form.setValue(fieldName, objectPath);
+      setUploadedFiles(prev => ({ ...prev, [fieldName]: file.name }));
       toast({
-        title: "Resume uploaded",
-        description: "Your resume has been uploaded successfully",
+        title: `${label} uploaded`,
+        description: `${file.name} uploaded successfully`,
       });
     } catch (error) {
       toast({
         title: "Upload failed",
-        description: "Failed to upload resume. Please try again.",
+        description: `Failed to upload ${label}. Please try again.`,
         variant: "destructive",
       });
     } finally {
-      setIsUploading(false);
+      setUploadingField(null);
     }
   };
 
@@ -653,41 +666,131 @@ export default function InternshipsPage() {
                         )}
                       />
 
-                      {/* Resume Upload */}
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-2">
-                          <FileUp className="w-4 h-4" />
-                          Upload Resume (PDF or Word)
-                        </Label>
-                        <div className="flex items-center gap-4">
-                          <Input
-                            type="file"
-                            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                            onChange={handleFileUpload}
-                            disabled={isUploading}
-                            className="flex-1"
-                            data-testid="input-resume"
-                          />
-                          {isUploading && (
-                            <span className="text-sm text-muted-foreground">Uploading...</span>
-                          )}
-                        </div>
-                        {uploadedFileName && (
-                          <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                            <FileCheck className="w-4 h-4" />
-                            <span>{uploadedFileName} uploaded successfully</span>
+                      {/* Document Uploads */}
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                          <FileUp className="w-5 h-5" />
+                          Upload Documents (All Optional, max 5MB each)
+                        </h3>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          {/* Resume */}
+                          <div className="space-y-2">
+                            <Label>Resume/CV</Label>
+                            <Input
+                              type="file"
+                              accept=".pdf,.doc,.docx"
+                              onChange={(e) => handleDocumentUpload(e, "resumeUrl", "Resume")}
+                              disabled={uploadingField === "resumeUrl"}
+                              data-testid="input-resume"
+                            />
+                            {uploadedFiles.resumeUrl && (
+                              <p className="text-xs text-green-600 flex items-center gap-1">
+                                <FileCheck className="w-3 h-3" /> {uploadedFiles.resumeUrl}
+                              </p>
+                            )}
+                            <p className="text-xs text-muted-foreground">PDF or DOC format</p>
                           </div>
+
+                          {/* College ID */}
+                          <div className="space-y-2">
+                            <Label>College ID Card</Label>
+                            <Input
+                              type="file"
+                              accept=".pdf,.jpg,.jpeg,.png,image/*"
+                              onChange={(e) => handleDocumentUpload(e, "collegeIdUrl", "College ID", true)}
+                              disabled={uploadingField === "collegeIdUrl"}
+                              data-testid="input-college-id"
+                            />
+                            {uploadedFiles.collegeIdUrl && (
+                              <p className="text-xs text-green-600 flex items-center gap-1">
+                                <FileCheck className="w-3 h-3" /> {uploadedFiles.collegeIdUrl}
+                              </p>
+                            )}
+                            <p className="text-xs text-muted-foreground">PDF or Image</p>
+                          </div>
+
+                          {/* Bonafide Certificate */}
+                          <div className="space-y-2">
+                            <Label>Bonafide Certificate</Label>
+                            <Input
+                              type="file"
+                              accept=".pdf"
+                              onChange={(e) => handleDocumentUpload(e, "bonafideCertificateUrl", "Bonafide Certificate")}
+                              disabled={uploadingField === "bonafideCertificateUrl"}
+                              data-testid="input-bonafide"
+                            />
+                            {uploadedFiles.bonafideCertificateUrl && (
+                              <p className="text-xs text-green-600 flex items-center gap-1">
+                                <FileCheck className="w-3 h-3" /> {uploadedFiles.bonafideCertificateUrl}
+                              </p>
+                            )}
+                            <p className="text-xs text-muted-foreground">PDF format</p>
+                          </div>
+
+                          {/* Government ID */}
+                          <div className="space-y-2">
+                            <Label>Government ID</Label>
+                            <Input
+                              type="file"
+                              accept=".pdf,.jpg,.jpeg,.png,image/*"
+                              onChange={(e) => handleDocumentUpload(e, "governmentIdUrl", "Government ID", true)}
+                              disabled={uploadingField === "governmentIdUrl"}
+                              data-testid="input-govt-id"
+                            />
+                            {uploadedFiles.governmentIdUrl && (
+                              <p className="text-xs text-green-600 flex items-center gap-1">
+                                <FileCheck className="w-3 h-3" /> {uploadedFiles.governmentIdUrl}
+                              </p>
+                            )}
+                            <p className="text-xs text-muted-foreground">Aadhaar/Passport</p>
+                          </div>
+
+                          {/* Latest Marksheet */}
+                          <div className="space-y-2">
+                            <Label>Latest Marksheet</Label>
+                            <Input
+                              type="file"
+                              accept=".pdf"
+                              onChange={(e) => handleDocumentUpload(e, "marksheetUrl", "Marksheet")}
+                              disabled={uploadingField === "marksheetUrl"}
+                              data-testid="input-marksheet"
+                            />
+                            {uploadedFiles.marksheetUrl && (
+                              <p className="text-xs text-green-600 flex items-center gap-1">
+                                <FileCheck className="w-3 h-3" /> {uploadedFiles.marksheetUrl}
+                              </p>
+                            )}
+                            <p className="text-xs text-muted-foreground">PDF format</p>
+                          </div>
+
+                          {/* PAN Card */}
+                          <div className="space-y-2">
+                            <Label>PAN Card (Optional)</Label>
+                            <Input
+                              type="file"
+                              accept=".pdf,.jpg,.jpeg,.png,image/*"
+                              onChange={(e) => handleDocumentUpload(e, "panCardUrl", "PAN Card", true)}
+                              disabled={uploadingField === "panCardUrl"}
+                              data-testid="input-pan"
+                            />
+                            {uploadedFiles.panCardUrl && (
+                              <p className="text-xs text-green-600 flex items-center gap-1">
+                                <FileCheck className="w-3 h-3" /> {uploadedFiles.panCardUrl}
+                              </p>
+                            )}
+                            <p className="text-xs text-muted-foreground">If available</p>
+                          </div>
+                        </div>
+                        {uploadingField && (
+                          <p className="text-sm text-muted-foreground">Uploading document...</p>
                         )}
-                        <p className="text-xs text-muted-foreground">
-                          Maximum file size: 5MB. Accepted formats: PDF, DOC, DOCX
-                        </p>
                       </div>
 
                       <Button 
                         type="submit" 
                         className="w-full" 
                         size="lg"
-                        disabled={applicationMutation.isPending || isUploading}
+                        disabled={applicationMutation.isPending || !!uploadingField}
                         data-testid="button-submit-application"
                       >
                         {applicationMutation.isPending ? "Submitting..." : "Submit Application"}

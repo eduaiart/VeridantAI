@@ -89,6 +89,11 @@ export const internshipApplications = pgTable("internship_applications", {
   
   // Documents
   resumeUrl: text("resume_url"),
+  collegeIdUrl: text("college_id_url"),
+  bonafideCertificateUrl: text("bonafide_certificate_url"),
+  governmentIdUrl: text("government_id_url"),
+  marksheetUrl: text("marksheet_url"),
+  panCardUrl: text("pan_card_url"),
   coverLetter: text("cover_letter"),
   
   // Application Status
@@ -370,6 +375,11 @@ export const applicationFormSchema = z.object({
   githubUrl: z.string().url().optional().or(z.literal("")),
   coverLetter: z.string().optional(),
   resumeUrl: z.string().optional(),
+  collegeIdUrl: z.string().optional(),
+  bonafideCertificateUrl: z.string().optional(),
+  governmentIdUrl: z.string().optional(),
+  marksheetUrl: z.string().optional(),
+  panCardUrl: z.string().optional(),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;

@@ -20,6 +20,7 @@ function Router() {
       <Route path="/verify" component={VerifyPage} />
       <Route path="/verify/:token" component={VerifyPage} />
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/dashboard" component={AdminDashboard} />
       <Route path="/login" component={LoginPage} />
       <Route path="/register" component={RegisterPage} />
       <Route component={NotFound} />

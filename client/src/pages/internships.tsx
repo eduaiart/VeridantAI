@@ -71,6 +71,10 @@ export default function InternshipsPage() {
       lastName: "",
       email: "",
       phone: "",
+      address: "",
+      city: "",
+      state: "",
+      pincode: "",
       highestQualification: "",
       institution: "",
       fieldOfStudy: "",
@@ -488,6 +492,60 @@ export default function InternshipsPage() {
                                 <FormLabel>Phone *</FormLabel>
                                 <FormControl>
                                   <Input {...field} placeholder="+91 XXXXXXXXXX" data-testid="input-phone" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name="address"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Address *</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="Street address, Colony, Locality" data-testid="input-address" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="grid md:grid-cols-3 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="city"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>City *</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="City" data-testid="input-city" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="state"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>State *</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="State" data-testid="input-state" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="pincode"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Pincode *</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="6-digit pincode" data-testid="input-pincode" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

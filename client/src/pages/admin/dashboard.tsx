@@ -24,7 +24,8 @@ import {
   Clock,
   BarChart3,
   TrendingUp,
-  Calendar
+  Calendar,
+  Download
 } from "lucide-react";
 import type { InternshipApplication, InternshipProgram } from "@shared/schema";
 
@@ -399,7 +400,14 @@ export default function AdminDashboard() {
                             </td>
                             <td className="py-3 px-4">
                               <div>
-                                <p className="font-medium">{app.firstName} {app.lastName}</p>
+                                <p className="font-medium flex items-center gap-2">
+                                  {app.firstName} {app.lastName}
+                                  {app.resumeUrl && (
+                                    <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded" title="Resume attached">
+                                      CV
+                                    </span>
+                                  )}
+                                </p>
                                 <p className="text-sm text-muted-foreground">{app.email}</p>
                               </div>
                             </td>
@@ -511,7 +519,15 @@ export default function AdminDashboard() {
                       </div>
                     )}
                     
-                    <div className="flex gap-2 pt-4">
+                    <div className="flex flex-wrap gap-2 pt-4">
+                      {selectedApplication.resumeUrl && (
+                        <a href={selectedApplication.resumeUrl} target="_blank" rel="noopener noreferrer" download>
+                          <Button variant="default" size="sm" className="gap-1" data-testid="button-download-resume">
+                            <Download className="w-4 h-4" />
+                            Download Resume
+                          </Button>
+                        </a>
+                      )}
                       {selectedApplication.linkedinUrl && (
                         <a href={selectedApplication.linkedinUrl} target="_blank" rel="noopener noreferrer">
                           <Button variant="outline" size="sm">LinkedIn</Button>

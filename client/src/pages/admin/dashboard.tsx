@@ -304,7 +304,7 @@ export default function AdminDashboard() {
                 <CardContent>
                   <div className="space-y-4">
                     {applications.slice(0, 5).map((app) => (
-                      <div key={app.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div key={app.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg gap-4">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                             <span className="text-primary font-semibold">
@@ -314,17 +314,42 @@ export default function AdminDashboard() {
                           <div>
                             <p className="font-medium">{app.firstName} {app.lastName}</p>
                             <p className="text-sm text-muted-foreground">{app.programTitle}</p>
+                            <div className="flex items-center gap-1 mt-1 flex-wrap">
+                              {app.resumeUrl && <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 px-1.5 py-0.5 rounded">CV</span>}
+                              {app.collegeIdUrl && <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 px-1.5 py-0.5 rounded">ID</span>}
+                              {app.marksheetUrl && <span className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 px-1.5 py-0.5 rounded">MS</span>}
+                              {(app.governmentIdUrl || app.bonafideCertificateUrl || app.panCardUrl) && <span className="text-xs bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 px-1.5 py-0.5 rounded">+Docs</span>}
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 flex-wrap">
                           {app.resumeUrl && (
                             <a href={app.resumeUrl} target="_blank" rel="noopener noreferrer" download>
                               <Button variant="outline" size="sm" className="gap-1" data-testid={`button-download-resume-${app.id}`}>
                                 <Download className="w-4 h-4" />
-                                Resume
+                                CV
                               </Button>
                             </a>
                           )}
+                          {app.collegeIdUrl && (
+                            <a href={app.collegeIdUrl} target="_blank" rel="noopener noreferrer" download>
+                              <Button variant="outline" size="sm" className="gap-1">
+                                <Download className="w-4 h-4" />
+                                ID
+                              </Button>
+                            </a>
+                          )}
+                          {app.marksheetUrl && (
+                            <a href={app.marksheetUrl} target="_blank" rel="noopener noreferrer" download>
+                              <Button variant="outline" size="sm" className="gap-1">
+                                <Download className="w-4 h-4" />
+                                MS
+                              </Button>
+                            </a>
+                          )}
+                          <Button variant="secondary" size="sm" onClick={() => setSelectedApplication(app)} data-testid={`button-view-${app.id}`}>
+                            View All
+                          </Button>
                           <Badge className={statusColors[app.status || "submitted"]}>
                             {(app.status || "submitted").replace(/_/g, " ").toUpperCase()}
                           </Badge>
@@ -410,13 +435,22 @@ export default function AdminDashboard() {
                               <div>
                                 <p className="font-medium flex items-center gap-2">
                                   {app.firstName} {app.lastName}
-                                  {app.resumeUrl && (
-                                    <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded" title="Resume attached">
-                                      CV
-                                    </span>
-                                  )}
                                 </p>
                                 <p className="text-sm text-muted-foreground">{app.email}</p>
+                                <div className="flex items-center gap-1 mt-1 flex-wrap">
+                                  {app.resumeUrl && (
+                                    <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 px-1.5 py-0.5 rounded">CV</span>
+                                  )}
+                                  {app.collegeIdUrl && (
+                                    <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 px-1.5 py-0.5 rounded">ID</span>
+                                  )}
+                                  {app.marksheetUrl && (
+                                    <span className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 px-1.5 py-0.5 rounded">MS</span>
+                                  )}
+                                  {(app.governmentIdUrl || app.bonafideCertificateUrl || app.panCardUrl) && (
+                                    <span className="text-xs bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 px-1.5 py-0.5 rounded">+Docs</span>
+                                  )}
+                                </div>
                               </div>
                             </td>
                             <td className="py-3 px-4">{app.programTitle}</td>

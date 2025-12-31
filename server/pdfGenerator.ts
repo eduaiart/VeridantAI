@@ -9,6 +9,7 @@ const COMPANY_ADDRESS = "Shivam Vihar Colony, Beur, Phulwari, Patna-800002, Biha
 const COMPANY_WEBSITE = "www.veridantai.in";
 const COMPANY_EMAIL = "hr@veridantai.in";
 const COMPANY_PHONE = "+91-8550970101";
+const COMPANY_CIN = "U62099BR2025PTC079060";
 
 // Get logo path
 const LOGO_PATH = path.join(process.cwd(), "attached_assets", "2nd_logo_highres_1767216390338.png");
@@ -129,7 +130,16 @@ export async function generateCertificatePDF(certificate: Certificate, baseUrl: 
   });
 }
 
-export async function generateOfferLetterPDF(offerLetter: OfferLetter, baseUrl: string): Promise<Buffer> {
+interface ApplicationDetails {
+  address?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  institution?: string;
+  fieldOfStudy?: string;
+}
+
+export async function generateOfferLetterPDF(offerLetter: OfferLetter, baseUrl: string, applicationDetails?: ApplicationDetails): Promise<Buffer> {
   return new Promise(async (resolve, reject) => {
     try {
       const doc = new PDFDocument({
@@ -174,11 +184,17 @@ export async function generateOfferLetterPDF(offerLetter: OfferLetter, baseUrl: 
          .text(`Date: ${currentDate}`, 50);
       doc.moveDown(1);
 
-      // Recipient
+      // Recipient Address
+      const internAddress = applicationDetails?.address || "";
+      const internCity = applicationDetails?.city || "";
+      const internState = applicationDetails?.state || "";
+      const internPincode = applicationDetails?.pincode || "";
+      const fullAddress = [internAddress, internCity, internState, internPincode].filter(Boolean).join(", ") || "[Address not provided]";
+      
       doc.fontSize(10)
          .fillColor("#1e293b")
          .text(offerLetter.recipientName)
-         .text(offerLetter.location || "[Address]");
+         .text(fullAddress);
       doc.moveDown(1);
 
       // Subject
@@ -416,7 +432,11 @@ export async function generateOfferLetterPDF(offerLetter: OfferLetter, baseUrl: 
       doc.moveDown(0.5);
       doc.text("Date: _________________________________");
       doc.moveDown(0.5);
-      doc.text("College/University: _________________________________");
+      const institution = applicationDetails?.institution || "[Institution Name]";
+      const fieldOfStudy = applicationDetails?.fieldOfStudy || "[Program]";
+      doc.text(`College/University: ${institution}`);
+      doc.moveDown(0.5);
+      doc.text(`Degree/Program: ${fieldOfStudy}`);
 
       // QR Code and Verification
       doc.moveDown(2);
@@ -433,7 +453,7 @@ export async function generateOfferLetterPDF(offerLetter: OfferLetter, baseUrl: 
       doc.fontSize(8)
          .fillColor("#94a3b8")
          .text(COMPANY_NAME, 50, doc.page.height - 50, { align: "center" })
-         .text(`CIN: [Company Identification Number] | Website: ${COMPANY_WEBSITE}`, { align: "center" });
+         .text(`CIN: ${COMPANY_CIN} | Website: ${COMPANY_WEBSITE}`, { align: "center" });
 
       doc.end();
     } catch (error) {

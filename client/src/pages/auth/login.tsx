@@ -2,7 +2,14 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -30,7 +37,7 @@ export default function LoginPage() {
         title: "Login Successful",
         description: `Welcome back, ${data.user.firstName || data.user.username}!`,
       });
-      
+
       if (data.user.role === "admin") {
         setLocation("/admin");
       } else {
@@ -54,7 +61,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
+
       <main className="flex-1 flex items-center justify-center py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <Card className="max-w-md mx-auto">
@@ -81,7 +88,7 @@ export default function LoginPage() {
                     data-testid="input-login-username"
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
@@ -99,14 +106,18 @@ export default function LoginPage() {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full" 
+                <Button
+                  type="submit"
+                  className="w-full"
                   disabled={loginMutation.isPending}
                   data-testid="button-login-submit"
                 >
@@ -117,21 +128,19 @@ export default function LoginPage() {
             <CardFooter className="flex flex-col space-y-4">
               <div className="text-center text-sm text-muted-foreground">
                 Don't have an account?{" "}
-                <a href="/register" className="text-primary hover:underline" data-testid="link-register">
+                <a
+                  href="/register"
+                  className="text-primary hover:underline"
+                  data-testid="link-register"
+                >
                   Register here
                 </a>
-              </div>
-              
-              <div className="text-center text-xs text-muted-foreground border-t pt-4 w-full">
-                <p>Demo Admin Login:</p>
-                <p>Username: <code className="bg-muted px-1 rounded">admin</code></p>
-                <p>Password: <code className="bg-muted px-1 rounded">admin123</code></p>
               </div>
             </CardFooter>
           </Card>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

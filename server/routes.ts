@@ -812,8 +812,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Access denied" });
       }
 
+      // Fetch application details for address and institution
+      const application = await storage.getApplication(offerLetter.applicationId);
+      const applicationDetails = application ? {
+        address: application.address || undefined,
+        city: application.city || undefined,
+        state: application.state || undefined,
+        pincode: application.pincode || undefined,
+        institution: application.institution || undefined,
+        fieldOfStudy: application.fieldOfStudy || undefined,
+      } : undefined;
+
       const baseUrl = `${req.protocol}://${req.get("host")}`;
-      const pdfBuffer = await generateOfferLetterPDF(offerLetter, baseUrl);
+      const pdfBuffer = await generateOfferLetterPDF(offerLetter, baseUrl, applicationDetails);
 
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `attachment; filename="offer-letter-${offerLetter.offerNumber}.pdf"`);

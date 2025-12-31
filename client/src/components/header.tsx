@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
@@ -7,7 +8,10 @@ import logoPath from "@assets/Logo_1762664773643.jpg";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [location, setLocation] = useLocation();
   const { t } = useLanguage();
+
+  const isHomePage = location === "/";
 
   const scrollToSection = (sectionId: string) => {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
@@ -109,6 +113,13 @@ export default function Header() {
             >
               {t("navigation.contact")}
             </button>
+            <a
+              href="/internships"
+              className="text-muted-foreground hover:text-foreground transition-colors font-medium"
+              data-testid="nav-internships"
+            >
+              Internships
+            </a>
           </nav>
 
           {/* CTA Button & Mobile Menu */}
@@ -200,6 +211,13 @@ export default function Header() {
               >
                 {t("navigation.contact")}
               </button>
+              <a
+                href="/internships"
+                className="text-muted-foreground hover:text-foreground transition-colors text-left font-medium"
+                data-testid="nav-mobile-internships"
+              >
+                Internships
+              </a>
               <Button
                 onClick={() => scrollToSection("contact")}
                 className="bg-gradient-to-r from-primary to-accent text-white hover:from-primary/90 hover:to-accent/90 w-full font-semibold shadow-lg"

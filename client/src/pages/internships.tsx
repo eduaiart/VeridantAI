@@ -29,7 +29,9 @@ import {
   Code,
   PenTool,
   TrendingUp,
-  Shield
+  Shield,
+  FileUp,
+  FileCheck
 } from "lucide-react";
 import type { z } from "zod";
 
@@ -79,8 +81,76 @@ export default function InternshipsPage() {
       portfolioUrl: "",
       githubUrl: "",
       coverLetter: "",
+      resumeUrl: "",
     },
   });
+
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Resume must be less than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const allowedTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a PDF or Word document",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const response = await fetch("/api/uploads/request-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: file.name,
+          size: file.size,
+          contentType: file.type,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to get upload URL");
+
+      const { uploadURL, objectPath } = await response.json();
+
+      const uploadResponse = await fetch(uploadURL, {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": file.type },
+      });
+
+      if (!uploadResponse.ok) throw new Error("Failed to upload file");
+
+      form.setValue("resumeUrl", objectPath);
+      setUploadedFileName(file.name);
+      toast({
+        title: "Resume uploaded",
+        description: "Your resume has been uploaded successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload resume. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const applicationMutation = useMutation({
     mutationFn: async (data: ApplicationFormData) => {
@@ -583,11 +653,41 @@ export default function InternshipsPage() {
                         )}
                       />
 
+                      {/* Resume Upload */}
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <FileUp className="w-4 h-4" />
+                          Upload Resume (PDF or Word)
+                        </Label>
+                        <div className="flex items-center gap-4">
+                          <Input
+                            type="file"
+                            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            onChange={handleFileUpload}
+                            disabled={isUploading}
+                            className="flex-1"
+                            data-testid="input-resume"
+                          />
+                          {isUploading && (
+                            <span className="text-sm text-muted-foreground">Uploading...</span>
+                          )}
+                        </div>
+                        {uploadedFileName && (
+                          <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                            <FileCheck className="w-4 h-4" />
+                            <span>{uploadedFileName} uploaded successfully</span>
+                          </div>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          Maximum file size: 5MB. Accepted formats: PDF, DOC, DOCX
+                        </p>
+                      </div>
+
                       <Button 
                         type="submit" 
                         className="w-full" 
                         size="lg"
-                        disabled={applicationMutation.isPending}
+                        disabled={applicationMutation.isPending || isUploading}
                         data-testid="button-submit-application"
                       >
                         {applicationMutation.isPending ? "Submitting..." : "Submit Application"}

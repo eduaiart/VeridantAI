@@ -369,6 +369,7 @@ export const applicationFormSchema = z.object({
   portfolioUrl: z.string().url().optional().or(z.literal("")),
   githubUrl: z.string().url().optional().or(z.literal("")),
   coverLetter: z.string().optional(),
+  resumeUrl: z.string().optional(),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;

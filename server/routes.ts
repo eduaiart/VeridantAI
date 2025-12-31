@@ -1,6 +1,8 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { dbStorage as storage } from "./dbStorage";
+import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
+import { generateCertificatePDF, generateOfferLetterPDF } from "./pdfGenerator";
 import { 
   insertContactSchema, 
   insertInternshipApplicationSchema,
@@ -698,6 +700,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============== PDF DOWNLOAD ROUTES ==============
+
+  // Download certificate PDF
+  app.get("/api/certificates/:id/download", authMiddleware, async (req, res) => {
+    try {
+      const certificate = await storage.getCertificate(req.params.id);
+      if (!certificate) {
+        return res.status(404).json({ error: "Certificate not found" });
+      }
+
+      // Only allow users to download their own certificates or admins
+      if (req.user!.role !== "admin" && certificate.userId !== req.user!.userId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const baseUrl = `${req.protocol}://${req.get("host")}`;
+      const pdfBuffer = await generateCertificatePDF(certificate, baseUrl);
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="certificate-${certificate.certificateNumber}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating certificate PDF:", error);
+      res.status(500).json({ error: "Failed to generate certificate" });
+    }
+  });
+
+  // Download offer letter PDF
+  app.get("/api/offer-letters/:id/download", authMiddleware, async (req, res) => {
+    try {
+      const offerLetter = await storage.getOfferLetter(req.params.id);
+      if (!offerLetter) {
+        return res.status(404).json({ error: "Offer letter not found" });
+      }
+
+      // Only allow users to download their own offer letters or admins
+      if (req.user!.role !== "admin" && offerLetter.userId !== req.user!.userId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const baseUrl = `${req.protocol}://${req.get("host")}`;
+      const pdfBuffer = await generateOfferLetterPDF(offerLetter, baseUrl);
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="offer-letter-${offerLetter.offerNumber}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating offer letter PDF:", error);
+      res.status(500).json({ error: "Failed to generate offer letter" });
+    }
+  });
+
   // ============== DASHBOARD STATS (Admin) ==============
   
   app.get("/api/admin/stats", authMiddleware, adminMiddleware, async (req, res) => {
@@ -741,6 +795,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch templates" });
     }
   });
+
+  // Register object storage routes for file uploads
+  registerObjectStorageRoutes(app);
 
   const httpServer = createServer(app);
   return httpServer;

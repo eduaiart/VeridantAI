@@ -6,7 +6,18 @@ This is a modern, full-stack web application for VeridantAI, a software company 
 
 The project implements a clean, professional design with smooth scrolling navigation, responsive layouts, and an integrated contact form that stores submissions in a PostgreSQL database. Built with modern web technologies, it provides an excellent user experience across all devices while maintaining high performance and accessibility standards.
 
-## Recent Changes (November 2025)
+## Recent Changes (January 2026)
+
+- **Email Notifications**: Integrated Resend for automated email notifications:
+  - Application confirmation emails sent to candidates
+  - Status change notifications (shortlisted, selected, rejected)
+  - Offer letter issued notifications
+  - Certificate issued notifications
+- **Application Form Updates**: Added address fields (address, city, state, pincode) to capture intern's full address for offer letters
+- **PDF Generation Fixes**: Fixed offer letter PDF layout issues - QR code and footer now correctly positioned on page 3 only
+- **Admin Dashboard**: Added address display in application details modal
+
+## Previous Changes (November 2025)
 
 - **Branding Update**: Logo updated throughout the site with two-tone design - "Veridant" in slate-600 gray (#64748B) and "AI" in sky-500 blue (#0EA5E9)
 - **Visual Assets**: Replaced hero section background with custom AI visualization image (image_1762664999271.png)

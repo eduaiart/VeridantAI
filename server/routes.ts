@@ -4,6 +4,12 @@ import { dbStorage as storage } from "./dbStorage";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 import { generateCertificatePDF, generateOfferLetterPDF } from "./pdfGenerator";
 import { 
+  sendApplicationConfirmation,
+  sendStatusChangeNotification,
+  sendOfferLetterNotification,
+  sendCertificateNotification
+} from "./emailService";
+import { 
   insertContactSchema, 
   insertInternshipApplicationSchema,
   loginSchema,
@@ -314,6 +320,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pincode: applicationData.pincode || null
       });
       
+      // Send confirmation email (async, don't wait for it)
+      sendApplicationConfirmation(
+        applicationData.email,
+        applicationData.firstName,
+        applicationData.lastName,
+        program.title,
+        application.applicationNumber
+      ).catch(err => console.error("Failed to send confirmation email:", err));
+      
       res.json({ 
         success: true, 
         application: {
@@ -466,6 +481,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         notes
       );
       
+      // Send status change email notification (async)
+      const program = await storage.getProgram(application.programId);
+      sendStatusChangeNotification(
+        application.email,
+        application.firstName,
+        application.lastName,
+        program?.title || "Internship Program",
+        application.applicationNumber,
+        status,
+        notes
+      ).catch(err => console.error("Failed to send status change email:", err));
+      
       res.json({ success: true, application: updated });
     } catch (error) {
       res.status(500).json({ error: "Failed to update application" });
@@ -559,6 +586,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const programTitle = program?.title || "Internship Program";
       
       // Create certificate with application data
+      const certificateType = "Completion";
       const certificate = await storage.createCertificate({
         applicationId,
         userId: application.userId || undefined,
@@ -572,6 +600,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mentorName: "Program Coordinator",
         issuedBy: req.user!.userId
       });
+      
+      // Send certificate notification email (async)
+      sendCertificateNotification(
+        application.email,
+        application.firstName,
+        application.lastName,
+        programTitle,
+        certificate.certificateNumber,
+        certificateType
+      ).catch(err => console.error("Failed to send certificate email:", err));
       
       res.json(certificate);
     } catch (error) {
@@ -669,6 +707,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const programTitle = program?.title || "Internship Program";
       
       // Create offer letter with application data
+      const startDate = new Date();
+      const endDate = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000); // 3 months from now
+      
       const offerLetter = await storage.createOfferLetter({
         applicationId,
         userId: application.userId || undefined,
@@ -677,14 +718,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         position: `${programTitle} Intern`,
         department: "Technology",
         stipend: "As per company policy",
-        startDate: new Date(),
-        endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 3 months from now
+        startDate,
+        endDate,
         reportingTo: "Program Coordinator",
         location: "Remote/Hybrid",
         termsAndConditions: "Standard internship terms apply. Details will be provided during onboarding.",
         issuedBy: req.user!.userId,
         status: "pending"
       });
+      
+      // Send offer letter notification email (async)
+      sendOfferLetterNotification(
+        application.email,
+        application.firstName,
+        application.lastName,
+        programTitle,
+        offerLetter.offerNumber,
+        startDate.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }),
+        endDate.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
+      ).catch(err => console.error("Failed to send offer letter email:", err));
       
       res.json(offerLetter);
     } catch (error) {

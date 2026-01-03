@@ -13,6 +13,7 @@ const COMPANY_CIN = "U62099BR2025PTC079060";
 
 // Get logo path
 const LOGO_PATH = path.join(process.cwd(), "attached_assets", "2nd_logo_highres_1767216390338.png");
+const SIGNATURE_PATH = path.join(process.cwd(), "attached_assets", "image_1767422192168.png");
 
 export async function generateCertificatePDF(certificate: Certificate, baseUrl: string): Promise<Buffer> {
   return new Promise(async (resolve, reject) => {
@@ -401,7 +402,16 @@ export async function generateOfferLetterPDF(offerLetter: OfferLetter, baseUrl: 
       doc.moveDown(2);
 
       doc.text("Very truly yours,");
-      doc.moveDown(2);
+      doc.moveDown(0.5);
+      
+      // Add signature image
+      if (fs.existsSync(SIGNATURE_PATH)) {
+        doc.image(SIGNATURE_PATH, 50, doc.y, { width: 100 });
+        doc.y += 50;
+      } else {
+        doc.moveDown(1.5);
+      }
+      
       doc.text("_____________________________");
       doc.text("Authorized Signatory");
       doc.text("Human Resources Department");

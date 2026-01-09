@@ -351,6 +351,28 @@ export const employmentHistory = pgTable("employment_history", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const employeeOfferLetters = pgTable("employee_offer_letters", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  
+  offerNumber: text("offer_number").notNull().unique(),
+  recipientName: text("recipient_name").notNull(),
+  position: text("position").notNull(),
+  department: text("department").notNull(),
+  
+  salary: text("salary"),
+  joiningDate: timestamp("joining_date"),
+  probationPeriod: text("probation_period").default("3 months"),
+  noticePeriod: text("notice_period").default("30 days"),
+  
+  verificationToken: text("verification_token").notNull().unique(),
+  pdfUrl: text("pdf_url"),
+  
+  issuedBy: varchar("issued_by").references(() => users.id),
+  issuedAt: timestamp("issued_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // ============== INSERT SCHEMAS ==============
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -425,6 +447,13 @@ export const insertEmploymentDocumentSchema = createInsertSchema(employmentDocum
   updatedAt: true,
 });
 
+export const insertEmployeeOfferLetterSchema = createInsertSchema(employeeOfferLetters).omit({
+  id: true,
+  offerNumber: true,
+  verificationToken: true,
+  createdAt: true,
+});
+
 // ============== TYPES ==============
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -451,6 +480,8 @@ export type Employee = typeof employees.$inferSelect;
 export type InsertEmploymentDocument = z.infer<typeof insertEmploymentDocumentSchema>;
 export type EmploymentDocument = typeof employmentDocuments.$inferSelect;
 export type EmploymentHistory = typeof employmentHistory.$inferSelect;
+export type InsertEmployeeOfferLetter = z.infer<typeof insertEmployeeOfferLetterSchema>;
+export type EmployeeOfferLetter = typeof employeeOfferLetters.$inferSelect;
 
 // ============== VALIDATION SCHEMAS ==============
 

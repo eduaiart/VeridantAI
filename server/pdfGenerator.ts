@@ -2,7 +2,7 @@ import PDFDocument from "pdfkit";
 import QRCode from "qrcode";
 import path from "path";
 import fs from "fs";
-import type { Certificate, OfferLetter } from "@shared/schema";
+import type { Certificate, OfferLetter, Employee } from "@shared/schema";
 
 const COMPANY_NAME = "VERIDANT AI SOLUTION PRIVATE LTD";
 const COMPANY_ADDRESS = "Shivam Vihar Colony, Beur, Phulwari, Patna-800002, Bihar, India";
@@ -482,4 +482,322 @@ export async function generateOfferLetterPDF(offerLetter: OfferLetter, baseUrl: 
 
 export async function generateQRCode(data: string, size: number = 200): Promise<string> {
   return QRCode.toDataURL(data, { width: size });
+}
+
+interface EmployeeOfferDetails {
+  offerNumber: string;
+  verificationToken: string;
+  employee: Employee;
+  salary?: string;
+  probationPeriod?: string;
+  noticePeriod?: string;
+}
+
+export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetails, baseUrl: string): Promise<Buffer> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const doc = new PDFDocument({
+        size: "A4",
+        margins: { top: 50, bottom: 50, left: 50, right: 50 }
+      });
+
+      const chunks: Buffer[] = [];
+      doc.on("data", (chunk) => chunks.push(chunk));
+      doc.on("end", () => resolve(Buffer.concat(chunks)));
+      doc.on("error", reject);
+
+      const { employee, offerNumber, verificationToken } = details;
+      const verificationUrl = `${baseUrl}/verify/${verificationToken}`;
+      const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { width: 80 });
+      
+      const joiningDate = employee.joiningDate ? new Date(employee.joiningDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }) : "[Joining Date]";
+      const currentDate = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+      const salaryDisplay = details.salary || (employee.salary ? `₹${Number(employee.salary).toLocaleString()}` : "[To be discussed]");
+      const probationPeriod = details.probationPeriod || "3 months";
+      const noticePeriod = details.noticePeriod || "30 days";
+
+      // ============ PAGE 1 ============
+      // Logo and Header
+      if (fs.existsSync(LOGO_PATH)) {
+        doc.image(LOGO_PATH, (doc.page.width - 80) / 2, 40, { width: 80 });
+      }
+
+      doc.fontSize(16)
+         .fillColor("#0EA5E9")
+         .text(COMPANY_NAME, 0, 130, { align: "center" });
+      
+      doc.fontSize(9)
+         .fillColor("#64748B")
+         .text(`Corporate Office: ${COMPANY_ADDRESS}`, { align: "center" })
+         .text(`Website: ${COMPANY_WEBSITE} | Email: ${COMPANY_EMAIL} | Phone: ${COMPANY_PHONE}`, { align: "center" });
+
+      doc.moveDown(1.5);
+      doc.moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y).stroke("#e2e8f0");
+      doc.moveDown(1);
+
+      // Date and Offer Number
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text(`Date: ${currentDate}`, 50)
+         .text(`Offer Number: ${offerNumber}`);
+      doc.moveDown(1);
+
+      // Recipient Address
+      const fullAddress = [employee.address, employee.city, employee.state, employee.pincode].filter(Boolean).join(", ") || "[Address not provided]";
+      
+      doc.fontSize(10)
+         .fillColor("#1e293b")
+         .text(`${employee.firstName} ${employee.lastName}`)
+         .text(fullAddress);
+      doc.moveDown(1);
+
+      // Subject
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("Subject: Employment Offer Letter", { underline: true });
+      doc.moveDown(1);
+
+      // Opening
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text(`Dear ${employee.firstName} ${employee.lastName},`);
+      doc.moveDown(0.5);
+
+      doc.text(
+        `On behalf of ${COMPANY_NAME} (the "Company"), we are pleased to extend to you this offer of employment for the position of ${employee.designation} in our ${employee.department} department. Your employment with the Company will commence on ${joiningDate}.`,
+        { align: "justify", lineGap: 3 }
+      );
+      doc.moveDown(1);
+
+      // Position Details
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("Position Details");
+      doc.fontSize(10)
+         .fillColor("#374151");
+      
+      const positionDetails = [
+        `• Designation: ${employee.designation}`,
+        `• Department: ${employee.department}`,
+        `• Employment Type: ${employee.employmentType?.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase()) || "Full Time"}`,
+        `• Joining Date: ${joiningDate}`,
+        `• Reporting Location: ${COMPANY_ADDRESS}`
+      ];
+      positionDetails.forEach(item => {
+        doc.text(item, { indent: 20, lineGap: 2 });
+      });
+      doc.moveDown(1);
+
+      // Compensation
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("Compensation & Benefits");
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text(
+           "Your compensation package includes the following:",
+           { lineGap: 3 }
+         );
+      doc.moveDown(0.5);
+
+      const compensationDetails = [
+        `• Monthly Salary: ${salaryDisplay} (Cost to Company)`,
+        "• Salary will be credited to your designated bank account on the last working day of each month",
+        "• Provident Fund contribution as per statutory requirements",
+        "• Medical benefits as per company policy",
+        "• Leave entitlements as per company policy"
+      ];
+      compensationDetails.forEach(item => {
+        doc.text(item, { indent: 20, lineGap: 2 });
+      });
+      doc.moveDown(1);
+
+      // Probation Period
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("Probation Period");
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text(
+           `You will be on probation for a period of ${probationPeriod} from your date of joining. During the probation period, either party may terminate the employment with 7 days' written notice. Upon successful completion of probation, you will be confirmed as a permanent employee of the Company.`,
+           { align: "justify", lineGap: 3 }
+         );
+      doc.moveDown(1);
+
+      // Notice Period
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("Notice Period");
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text(
+           `After confirmation, either party may terminate the employment by providing ${noticePeriod} written notice. The Company reserves the right to pay salary in lieu of notice period at its discretion.`,
+           { align: "justify", lineGap: 3 }
+         );
+
+      // ============ PAGE 2 ============
+      doc.addPage();
+
+      // Confidentiality
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("Confidentiality & Non-Disclosure");
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text(
+           "During your employment and thereafter, you agree to maintain strict confidentiality regarding all proprietary information, trade secrets, business strategies, client information, source code, algorithms, and any other confidential information belonging to the Company. You shall not disclose any such information to third parties without prior written authorization.",
+           { align: "justify", lineGap: 3 }
+         );
+      doc.moveDown(1);
+
+      // Intellectual Property
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("Intellectual Property");
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text(
+           "All work product, inventions, discoveries, designs, code, documentation, and intellectual property created by you during your employment shall be the sole and exclusive property of the Company. You agree to assign all rights, title, and interest in such intellectual property to the Company.",
+           { align: "justify", lineGap: 3 }
+         );
+      doc.moveDown(1);
+
+      // Company Policies
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("Company Policies & Code of Conduct");
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text("As an employee, you are expected to:", { lineGap: 3 });
+      doc.moveDown(0.5);
+
+      const policies = [
+        "• Adhere to all company policies, procedures, and code of conduct",
+        "• Maintain professional behavior and integrity at all times",
+        "• Follow data security and information technology policies",
+        "• Comply with all applicable laws and regulations",
+        "• Report any conflicts of interest or unethical behavior",
+        "• Maintain regular attendance and punctuality"
+      ];
+      policies.forEach(item => {
+        doc.text(item, { indent: 20, lineGap: 2 });
+      });
+      doc.moveDown(1);
+
+      // Documents Required
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("Documents Required");
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text("Please submit the following documents on or before your joining date:", { lineGap: 3 });
+      doc.moveDown(0.5);
+
+      const documents = [
+        "1. Signed copy of this offer letter",
+        "2. Copy of valid government-issued photo ID (Aadhaar/PAN/Passport)",
+        "3. Recent passport-sized photographs (4 copies)",
+        "4. Educational certificates and mark sheets",
+        "5. Previous employment relieving letter and experience certificates (if applicable)",
+        "6. Last 3 months' salary slips (if applicable)",
+        "7. Bank account details for salary credit",
+        "8. PAN Card copy",
+        "9. Address proof"
+      ];
+      documents.forEach(item => {
+        doc.text(item, { indent: 20, lineGap: 2 });
+      });
+
+      // ============ PAGE 3 ============
+      doc.addPage();
+
+      // Governing Law
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("Governing Law");
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text(
+           "This offer letter and your employment shall be governed by the laws of India. Any disputes arising out of or in connection with this employment shall be subject to the exclusive jurisdiction of the courts in Patna, Bihar.",
+           { align: "justify", lineGap: 3 }
+         );
+      doc.moveDown(1.5);
+
+      // Closing
+      doc.text(
+        "We are excited to welcome you to the Veridant AI family. We believe your skills and experience will be valuable additions to our team. Please sign and return a copy of this offer letter to confirm your acceptance.",
+        { align: "justify", lineGap: 3 }
+      );
+      doc.moveDown(2);
+
+      doc.text("Yours sincerely,");
+      doc.moveDown(0.5);
+      
+      // Add signature image
+      if (fs.existsSync(SIGNATURE_PATH)) {
+        doc.image(SIGNATURE_PATH, 50, doc.y, { width: 100 });
+        doc.y += 50;
+      } else {
+        doc.moveDown(1.5);
+      }
+      
+      doc.text("_____________________________");
+      doc.text("Authorized Signatory");
+      doc.text("Human Resources Department");
+      doc.text(COMPANY_NAME);
+      doc.text(`Email: ${COMPANY_EMAIL}`);
+
+      doc.moveDown(2);
+      doc.moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y).stroke("#e2e8f0");
+      doc.moveDown(1);
+
+      // Acceptance Section
+      doc.fontSize(12)
+         .fillColor("#0EA5E9")
+         .text("ACCEPTANCE OF OFFER", { align: "center" });
+      doc.moveDown(0.5);
+
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text(
+           `I, ${employee.firstName} ${employee.lastName}, accept the employment offer from ${COMPANY_NAME} on the terms and conditions set out in this letter. I confirm that I have read, understood, and agree to all the terms mentioned above.`,
+           { align: "justify", lineGap: 3 }
+         );
+      doc.moveDown(1.5);
+
+      doc.text("Printed Name: _________________________________");
+      doc.moveDown(0.5);
+      doc.text("Signature: _________________________________");
+      doc.moveDown(0.5);
+      doc.text("Date: _________________________________");
+
+      // Calculate safe positioning within printable area
+      const printableBottom = doc.page.height - doc.page.margins.bottom;
+      const qrY = printableBottom - 80;
+      const footerY = printableBottom - 25;
+
+      // QR Code and Verification
+      const qrBuffer = Buffer.from(qrCodeDataUrl.split(",")[1], "base64");
+      doc.image(qrBuffer, 50, qrY, { width: 60 });
+      
+      doc.fontSize(8).fillColor("#64748B");
+      doc.text(`Offer No: ${offerNumber}`, 120, qrY + 15, { lineBreak: false });
+      doc.text("Scan QR code to verify", 120, qrY + 27, { lineBreak: false });
+
+      // Footer
+      doc.fontSize(8).fillColor("#94a3b8");
+      const companyText = COMPANY_NAME;
+      const cinText = `CIN: ${COMPANY_CIN} | Website: ${COMPANY_WEBSITE}`;
+      const companyTextWidth = doc.widthOfString(companyText);
+      const cinTextWidth = doc.widthOfString(cinText);
+      const pageCenter = doc.page.width / 2;
+      
+      doc.text(companyText, pageCenter - companyTextWidth / 2, footerY, { lineBreak: false });
+      doc.text(cinText, pageCenter - cinTextWidth / 2, footerY + 12, { lineBreak: false });
+
+      doc.end();
+    } catch (error) {
+      reject(error);
+    }
+  });
 }

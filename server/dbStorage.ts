@@ -4,7 +4,7 @@ import {
   users, contacts, internshipPrograms, internshipApplications,
   applicationStatusHistory, messages, emailTemplates,
   certificates, offerLetters, verificationLogs, weeklyReports,
-  employees, employmentDocuments, employmentHistory,
+  employees, employmentDocuments, employmentHistory, employeeOfferLetters,
   type User, type InsertUser,
   type Contact, type InsertContact,
   type InternshipProgram, type InsertInternshipProgram,
@@ -18,7 +18,8 @@ import {
   type WeeklyReport, type InsertWeeklyReport,
   type Employee, type InsertEmployee,
   type EmploymentDocument, type InsertEmploymentDocument,
-  type EmploymentHistory
+  type EmploymentHistory,
+  type EmployeeOfferLetter, type InsertEmployeeOfferLetter
 } from "@shared/schema";
 import { IStorage } from "./storage";
 import bcrypt from "bcryptjs";
@@ -49,6 +50,12 @@ function generateVerificationToken(): string {
 function generateEmployeeId(count: number): string {
   const num = (count + 1).toString().padStart(3, "0");
   return `VAI-EMP-${num}`;
+}
+
+function generateEmployeeOfferNumber(count: number): string {
+  const year = new Date().getFullYear();
+  const num = (count + 1).toString().padStart(5, "0");
+  return `EMP-OFR-${year}-${num}`;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -649,6 +656,47 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(employmentHistory)
       .where(eq(employmentHistory.employeeId, employeeId))
       .orderBy(desc(employmentHistory.createdAt));
+  }
+
+  // Employee Offer Letters
+  async getEmployeeOfferLetterCount(): Promise<number> {
+    const result = await db.select({ count: sql<number>`count(*)` }).from(employeeOfferLetters);
+    return result[0]?.count || 0;
+  }
+
+  async createEmployeeOfferLetter(data: Omit<InsertEmployeeOfferLetter, "offerNumber" | "verificationToken">): Promise<EmployeeOfferLetter> {
+    const count = await this.getEmployeeOfferLetterCount();
+    const offerNumber = generateEmployeeOfferNumber(count);
+    const verificationToken = generateVerificationToken();
+    
+    const result = await db.insert(employeeOfferLetters).values({
+      id: randomUUID(),
+      offerNumber,
+      verificationToken,
+      ...data,
+    }).returning();
+    return result[0];
+  }
+
+  async getEmployeeOfferLetter(id: string): Promise<EmployeeOfferLetter | undefined> {
+    const results = await db.select().from(employeeOfferLetters).where(eq(employeeOfferLetters.id, id));
+    return results[0];
+  }
+
+  async getEmployeeOfferLetterByToken(token: string): Promise<EmployeeOfferLetter | undefined> {
+    const results = await db.select().from(employeeOfferLetters).where(eq(employeeOfferLetters.verificationToken, token));
+    return results[0];
+  }
+
+  async getEmployeeOfferLettersByEmployee(employeeId: string): Promise<EmployeeOfferLetter[]> {
+    return await db.select().from(employeeOfferLetters)
+      .where(eq(employeeOfferLetters.employeeId, employeeId))
+      .orderBy(desc(employeeOfferLetters.createdAt));
+  }
+
+  async updateEmployeeOfferLetter(id: string, updates: Partial<EmployeeOfferLetter>): Promise<EmployeeOfferLetter | undefined> {
+    const result = await db.update(employeeOfferLetters).set(updates).where(eq(employeeOfferLetters.id, id)).returning();
+    return result[0];
   }
 }
 

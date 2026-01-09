@@ -396,6 +396,57 @@ export default function AdminDashboard() {
     },
   });
 
+  const generateEmployeeOfferLetterMutation = useMutation({
+    mutationFn: async ({ employeeId, salary, probationPeriod, noticePeriod }: {
+      employeeId: string;
+      salary?: string;
+      probationPeriod?: string;
+      noticePeriod?: string;
+    }) => {
+      const response = await fetch("/api/employee-offer-letters", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ employeeId, salary, probationPeriod, noticePeriod }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to generate offer letter");
+      }
+      return response.json();
+    },
+    onSuccess: async (data) => {
+      toast({
+        title: "Offer Letter Generated",
+        description: `Offer letter ${data.offerNumber} has been created.`,
+      });
+      // Download with authentication
+      const response = await fetch(`/api/employee-offer-letters/${data.id}/download`, {
+        headers: getAuthHeaders(),
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `employee-offer-letter-${data.offerNumber}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -1265,7 +1316,33 @@ export default function AdminDashboard() {
               </div>
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="gap-2">
+            <Button
+              onClick={() => {
+                if (selectedEmployee) {
+                  generateEmployeeOfferLetterMutation.mutate({
+                    employeeId: selectedEmployee.id,
+                    salary: selectedEmployee.salary ? `₹${Number(selectedEmployee.salary).toLocaleString()}` : undefined,
+                    probationPeriod: "3 months",
+                    noticePeriod: "30 days",
+                  });
+                }
+              }}
+              disabled={generateEmployeeOfferLetterMutation.isPending}
+              className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90"
+            >
+              {generateEmployeeOfferLetterMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Generate Offer Letter
+                </>
+              )}
+            </Button>
             <DialogClose asChild>
               <Button variant="outline">Close</Button>
             </DialogClose>

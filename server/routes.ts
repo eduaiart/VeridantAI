@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { dbStorage as storage } from "./dbStorage";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
-import { generateCertificatePDF, generateOfferLetterPDF } from "./pdfGenerator";
+import { generateCertificatePDF, generateOfferLetterPDF, generateEmployeeOfferLetterPDF } from "./pdfGenerator";
 import { 
   sendApplicationConfirmation,
   sendStatusChangeNotification,
@@ -1244,6 +1244,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error converting intern to employee:", error);
       res.status(500).json({ error: "Failed to convert intern to employee" });
+    }
+  });
+
+  // ============== EMPLOYEE OFFER LETTER ROUTES ==============
+
+  // Generate employee offer letter
+  app.post("/api/employee-offer-letters", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const { employeeId, salary, probationPeriod, noticePeriod } = req.body;
+      
+      if (!employeeId) {
+        return res.status(400).json({ error: "Employee ID is required" });
+      }
+
+      const employee = await storage.getEmployee(employeeId);
+      if (!employee) {
+        return res.status(404).json({ error: "Employee not found" });
+      }
+
+      // Create offer letter record
+      const offerLetter = await storage.createEmployeeOfferLetter({
+        employeeId,
+        recipientName: `${employee.firstName} ${employee.lastName}`,
+        position: employee.designation,
+        department: employee.department,
+        salary: salary || employee.salary || null,
+        joiningDate: employee.joiningDate,
+        probationPeriod: probationPeriod || "3 months",
+        noticePeriod: noticePeriod || "30 days",
+        issuedBy: req.user!.userId,
+      });
+
+      // Generate PDF
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const pdfBuffer = await generateEmployeeOfferLetterPDF({
+        offerNumber: offerLetter.offerNumber,
+        verificationToken: offerLetter.verificationToken,
+        employee,
+        salary: salary || (employee.salary ? `₹${Number(employee.salary).toLocaleString()}` : undefined),
+        probationPeriod: probationPeriod || "3 months",
+        noticePeriod: noticePeriod || "30 days",
+      }, baseUrl);
+
+      // Log in employment history
+      await storage.addEmploymentHistory(
+        employeeId,
+        "document_verified",
+        null,
+        `Offer letter ${offerLetter.offerNumber} issued`,
+        req.user!.userId
+      );
+
+      res.status(201).json(offerLetter);
+    } catch (error) {
+      console.error("Error generating employee offer letter:", error);
+      res.status(500).json({ error: "Failed to generate offer letter" });
+    }
+  });
+
+  // Download employee offer letter
+  app.get("/api/employee-offer-letters/:id/download", authMiddleware, async (req, res) => {
+    try {
+      const offerLetter = await storage.getEmployeeOfferLetter(req.params.id);
+      if (!offerLetter) {
+        return res.status(404).json({ error: "Offer letter not found" });
+      }
+
+      const employee = await storage.getEmployee(offerLetter.employeeId);
+      if (!employee) {
+        return res.status(404).json({ error: "Employee not found" });
+      }
+
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const pdfBuffer = await generateEmployeeOfferLetterPDF({
+        offerNumber: offerLetter.offerNumber,
+        verificationToken: offerLetter.verificationToken,
+        employee,
+        salary: offerLetter.salary || undefined,
+        probationPeriod: offerLetter.probationPeriod || "3 months",
+        noticePeriod: offerLetter.noticePeriod || "30 days",
+      }, baseUrl);
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="offer-letter-${offerLetter.offerNumber}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error downloading offer letter:", error);
+      res.status(500).json({ error: "Failed to download offer letter" });
+    }
+  });
+
+  // Get employee offer letters
+  app.get("/api/employees/:employeeId/offer-letters", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const offerLetters = await storage.getEmployeeOfferLettersByEmployee(req.params.employeeId);
+      res.json(offerLetters);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch offer letters" });
     }
   });
 

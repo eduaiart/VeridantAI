@@ -1181,6 +1181,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Convert intern to employee
+  app.post("/api/employees/convert-intern", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const { applicationId, designation, department, salary, joiningDate } = req.body;
+      
+      if (!applicationId || !designation || !department || !joiningDate) {
+        return res.status(400).json({ error: "Missing required fields: applicationId, designation, department, joiningDate" });
+      }
+
+      // Get the application
+      const application = await storage.getApplication(applicationId);
+      if (!application) {
+        return res.status(404).json({ error: "Application not found" });
+      }
+
+      if (application.status !== "completed") {
+        return res.status(400).json({ error: "Only completed interns can be converted to employees" });
+      }
+
+      // Create employee from intern data (employeeId is auto-generated)
+      const employee = await storage.createEmployee({
+        firstName: application.firstName,
+        lastName: application.lastName,
+        email: application.email,
+        phone: application.phone,
+        designation,
+        department,
+        salary: salary || null,
+        joiningDate: new Date(joiningDate),
+        employmentType: "full_time",
+        createdBy: req.user!.userId,
+      });
+
+      // Log conversion in history
+      await storage.addEmploymentHistory(
+        employee.id,
+        "status_change",
+        null,
+        "onboarding",
+        req.user!.userId,
+        `Converted from intern (Application: ${application.applicationNumber})`
+      );
+
+      res.status(201).json(employee);
+    } catch (error) {
+      console.error("Error converting intern to employee:", error);
+      res.status(500).json({ error: "Failed to convert intern to employee" });
+    }
+  });
+
   // Register object storage routes for file uploads
   registerObjectStorageRoutes(app);
 

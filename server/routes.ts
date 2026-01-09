@@ -12,6 +12,8 @@ import {
 import { 
   insertContactSchema, 
   insertInternshipApplicationSchema,
+  insertEmployeeSchema,
+  insertEmploymentDocumentSchema,
   loginSchema,
   registerSchema,
   applicationFormSchema
@@ -928,6 +930,254 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(templates);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch templates" });
+    }
+  });
+
+  // ============== EMPLOYEE MANAGEMENT (Admin) ==============
+
+  // Get all employees
+  app.get("/api/employees", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const { status, department } = req.query;
+      const filters: { status?: string; department?: string } = {};
+      if (status && typeof status === "string") filters.status = status;
+      if (department && typeof department === "string") filters.department = department;
+      
+      const employees = await storage.getEmployees(Object.keys(filters).length > 0 ? filters : undefined);
+      res.json(employees);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch employees" });
+    }
+  });
+
+  // Get single employee
+  app.get("/api/employees/:id", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const employee = await storage.getEmployee(req.params.id);
+      if (!employee) {
+        return res.status(404).json({ error: "Employee not found" });
+      }
+      res.json(employee);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch employee" });
+    }
+  });
+
+  // Create employee (can also convert from intern)
+  app.post("/api/employees", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const data = insertEmployeeSchema.parse(req.body);
+      const employee = await storage.createEmployee({
+        ...data,
+        createdBy: req.user!.userId,
+      });
+      
+      // Log creation in history
+      await storage.addEmploymentHistory(
+        employee.id,
+        "status_change",
+        null,
+        "onboarding",
+        req.user!.userId,
+        "Employee record created"
+      );
+      
+      res.status(201).json(employee);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid employee data", details: error.errors });
+      }
+      console.error("Error creating employee:", error);
+      res.status(500).json({ error: "Failed to create employee" });
+    }
+  });
+
+  // Update employee
+  app.patch("/api/employees/:id", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const existing = await storage.getEmployee(req.params.id);
+      if (!existing) {
+        return res.status(404).json({ error: "Employee not found" });
+      }
+
+      const updates = req.body;
+      
+      // Track status changes
+      if (updates.status && updates.status !== existing.status) {
+        await storage.addEmploymentHistory(
+          req.params.id,
+          "status_change",
+          existing.status,
+          updates.status,
+          req.user!.userId,
+          updates.statusReason || `Status changed from ${existing.status} to ${updates.status}`
+        );
+      }
+
+      // Track designation changes
+      if (updates.designation && updates.designation !== existing.designation) {
+        await storage.addEmploymentHistory(
+          req.params.id,
+          "designation_change",
+          existing.designation,
+          updates.designation,
+          req.user!.userId
+        );
+      }
+
+      // Track department changes
+      if (updates.department && updates.department !== existing.department) {
+        await storage.addEmploymentHistory(
+          req.params.id,
+          "department_change",
+          existing.department,
+          updates.department,
+          req.user!.userId
+        );
+      }
+
+      const employee = await storage.updateEmployee(req.params.id, updates);
+      res.json(employee);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update employee" });
+    }
+  });
+
+  // Get employee count and stats
+  app.get("/api/employees/stats/summary", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const employees = await storage.getEmployees();
+      const stats = {
+        total: employees.length,
+        onboarding: employees.filter(e => e.status === "onboarding").length,
+        active: employees.filter(e => e.status === "active").length,
+        onLeave: employees.filter(e => e.status === "on_leave").length,
+        resigned: employees.filter(e => e.status === "resigned").length,
+        terminated: employees.filter(e => e.status === "terminated").length,
+        byDepartment: {
+          Engineering: employees.filter(e => e.department === "Engineering").length,
+          Finance: employees.filter(e => e.department === "Finance").length,
+          HR: employees.filter(e => e.department === "HR").length,
+          Marketing: employees.filter(e => e.department === "Marketing").length,
+          Operations: employees.filter(e => e.department === "Operations").length,
+        }
+      };
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch employee stats" });
+    }
+  });
+
+  // Convert intern to employee
+  app.post("/api/employees/convert-from-intern/:applicationId", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const application = await storage.getApplication(req.params.applicationId);
+      if (!application) {
+        return res.status(404).json({ error: "Application not found" });
+      }
+      
+      if (application.status !== "completed") {
+        return res.status(400).json({ error: "Only completed internships can be converted to employees" });
+      }
+
+      const program = await storage.getProgram(application.programId);
+      
+      const employee = await storage.createEmployee({
+        userId: application.userId,
+        applicationId: application.id,
+        firstName: application.firstName,
+        lastName: application.lastName,
+        email: application.email,
+        phone: application.phone,
+        address: application.address,
+        city: application.city,
+        state: application.state,
+        pincode: application.pincode,
+        designation: req.body.designation || `${program?.title || "Associate"}`,
+        department: program?.department || "Engineering",
+        employmentType: "intern_converted",
+        joiningDate: new Date(),
+        createdBy: req.user!.userId,
+      });
+
+      await storage.addEmploymentHistory(
+        employee.id,
+        "status_change",
+        null,
+        "onboarding",
+        req.user!.userId,
+        `Converted from internship application ${application.applicationNumber}`
+      );
+
+      res.status(201).json(employee);
+    } catch (error) {
+      console.error("Error converting intern:", error);
+      res.status(500).json({ error: "Failed to convert intern to employee" });
+    }
+  });
+
+  // ============== EMPLOYMENT DOCUMENTS ==============
+
+  // Get employee documents
+  app.get("/api/employees/:id/documents", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const documents = await storage.getEmploymentDocuments(req.params.id);
+      res.json(documents);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch documents" });
+    }
+  });
+
+  // Add document
+  app.post("/api/employees/:id/documents", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const data = insertEmploymentDocumentSchema.parse({
+        ...req.body,
+        employeeId: req.params.id,
+      });
+      const document = await storage.createEmploymentDocument(data);
+      res.status(201).json(document);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid document data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to add document" });
+    }
+  });
+
+  // Verify document
+  app.patch("/api/employees/:employeeId/documents/:docId/verify", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const document = await storage.updateEmploymentDocument(req.params.docId, {
+        isVerified: true,
+        verifiedBy: req.user!.userId,
+        verifiedAt: new Date(),
+        verificationNotes: req.body.notes,
+      });
+      
+      if (document) {
+        await storage.addEmploymentHistory(
+          req.params.employeeId,
+          "document_verified",
+          null,
+          `${document.documentType} verified`,
+          req.user!.userId
+        );
+      }
+      
+      res.json(document);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to verify document" });
+    }
+  });
+
+  // Get employee history
+  app.get("/api/employees/:id/history", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const history = await storage.getEmploymentHistory(req.params.id);
+      res.json(history);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch employment history" });
     }
   });
 

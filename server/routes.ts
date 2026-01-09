@@ -966,7 +966,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create employee (can also convert from intern)
   app.post("/api/employees", authMiddleware, adminMiddleware, async (req, res) => {
     try {
+      console.log("Creating employee with data:", JSON.stringify(req.body, null, 2));
+      
+      // Parse and validate
       const data = insertEmployeeSchema.parse(req.body);
+      console.log("Parsed data:", JSON.stringify(data, null, 2));
+      
       const employee = await storage.createEmployee({
         ...data,
         createdBy: req.user!.userId,
@@ -985,6 +990,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(employee);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Zod validation errors:", JSON.stringify(error.errors, null, 2));
         return res.status(400).json({ error: "Invalid employee data", details: error.errors });
       }
       console.error("Error creating employee:", error);

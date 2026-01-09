@@ -13,7 +13,7 @@ const COMPANY_CIN = "U62099BR2025PTC079060";
 
 // Get logo path
 const LOGO_PATH = path.join(process.cwd(), "attached_assets", "2nd_logo_highres_1767216390338.png");
-const SIGNATURE_PATH = path.join(process.cwd(), "attached_assets", "image_1767422192168.png");
+const SIGNATURE_PATH = path.join(process.cwd(), "attached_assets", "image_1767954911326.png");
 
 export async function generateCertificatePDF(certificate: Certificate, baseUrl: string): Promise<Buffer> {
   return new Promise(async (resolve, reject) => {

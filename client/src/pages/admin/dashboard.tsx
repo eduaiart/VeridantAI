@@ -70,6 +70,13 @@ export default function AdminDashboard() {
   const [showNewEmployeeModal, setShowNewEmployeeModal] = useState(false);
   const [showConvertModal, setShowConvertModal] = useState(false);
   const [convertingApplication, setConvertingApplication] = useState<any>(null);
+  const [showOfferLetterModal, setShowOfferLetterModal] = useState(false);
+  const [offerLetterForm, setOfferLetterForm] = useState({
+    probationSalary: "",
+    confirmedSalary: "",
+    probationPeriod: "6",
+    noticePeriod: "30",
+  });
   const [newEmployeeForm, setNewEmployeeForm] = useState({
     firstName: "",
     lastName: "",
@@ -410,9 +417,10 @@ export default function AdminDashboard() {
   });
 
   const generateEmployeeOfferLetterMutation = useMutation({
-    mutationFn: async ({ employeeId, salary, probationPeriod, noticePeriod }: {
+    mutationFn: async ({ employeeId, probationSalary, confirmedSalary, probationPeriod, noticePeriod }: {
       employeeId: string;
-      salary?: string;
+      probationSalary?: string;
+      confirmedSalary?: string;
       probationPeriod?: string;
       noticePeriod?: string;
     }) => {
@@ -422,7 +430,7 @@ export default function AdminDashboard() {
           "Content-Type": "application/json",
           ...getAuthHeaders(),
         },
-        body: JSON.stringify({ employeeId, salary, probationPeriod, noticePeriod }),
+        body: JSON.stringify({ employeeId, probationSalary, confirmedSalary, probationPeriod, noticePeriod }),
       });
       if (!response.ok) {
         const error = await response.json();
@@ -431,6 +439,13 @@ export default function AdminDashboard() {
       return response.json();
     },
     onSuccess: async (data) => {
+      setShowOfferLetterModal(false);
+      setOfferLetterForm({
+        probationSalary: "",
+        confirmedSalary: "",
+        probationPeriod: "6",
+        noticePeriod: "30",
+      });
       toast({
         title: "Offer Letter Generated",
         description: `Offer letter ${data.offerNumber} has been created.`,
@@ -1332,29 +1347,13 @@ export default function AdminDashboard() {
           <DialogFooter className="gap-2">
             <Button
               onClick={() => {
-                if (selectedEmployee) {
-                  generateEmployeeOfferLetterMutation.mutate({
-                    employeeId: selectedEmployee.id,
-                    salary: selectedEmployee.salary ? `₹${Number(selectedEmployee.salary).toLocaleString()}` : undefined,
-                    probationPeriod: "3 months",
-                    noticePeriod: "30 days",
-                  });
-                }
+                setShowEmployeeModal(false);
+                setShowOfferLetterModal(true);
               }}
-              disabled={generateEmployeeOfferLetterMutation.isPending}
               className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90"
             >
-              {generateEmployeeOfferLetterMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <FileText className="h-4 w-4 mr-2" />
-                  Generate Offer Letter
-                </>
-              )}
+              <FileText className="h-4 w-4 mr-2" />
+              Generate Offer Letter
             </Button>
             <DialogClose asChild>
               <Button variant="outline">Close</Button>
@@ -1528,6 +1527,129 @@ export default function AdminDashboard() {
               onCancel={() => setShowConvertModal(false)}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Generate Offer Letter Modal */}
+      <Dialog open={showOfferLetterModal} onOpenChange={setShowOfferLetterModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Generate Employee Offer Letter</DialogTitle>
+            <DialogDescription>
+              {selectedEmployee && `Generate offer letter for ${selectedEmployee.firstName} ${selectedEmployee.lastName}`}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedEmployee && (
+            <div className="space-y-4">
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="text-sm text-muted-foreground">Employee Details</p>
+                <p className="font-medium">{selectedEmployee.firstName} {selectedEmployee.lastName}</p>
+                <p className="text-sm">{selectedEmployee.designation} - {selectedEmployee.department}</p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Compensation During Probation</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="probationSalary" className="text-xs text-muted-foreground">Monthly (₹)</Label>
+                    <Input
+                      id="probationSalary"
+                      type="number"
+                      value={offerLetterForm.probationSalary}
+                      onChange={(e) => setOfferLetterForm({ ...offerLetterForm, probationSalary: e.target.value })}
+                      placeholder="25000"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Annual (₹)</Label>
+                    <Input
+                      value={offerLetterForm.probationSalary ? `₹${(Number(offerLetterForm.probationSalary) * 12).toLocaleString()}` : ""}
+                      disabled
+                      className="bg-muted"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Compensation After Confirmation</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="confirmedSalary" className="text-xs text-muted-foreground">Monthly (₹)</Label>
+                    <Input
+                      id="confirmedSalary"
+                      type="number"
+                      value={offerLetterForm.confirmedSalary}
+                      onChange={(e) => setOfferLetterForm({ ...offerLetterForm, confirmedSalary: e.target.value })}
+                      placeholder="30000"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Annual (₹)</Label>
+                    <Input
+                      value={offerLetterForm.confirmedSalary ? `₹${(Number(offerLetterForm.confirmedSalary) * 12).toLocaleString()}` : ""}
+                      disabled
+                      className="bg-muted"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="probationPeriod">Probation Period (months)</Label>
+                  <Input
+                    id="probationPeriod"
+                    type="number"
+                    value={offerLetterForm.probationPeriod}
+                    onChange={(e) => setOfferLetterForm({ ...offerLetterForm, probationPeriod: e.target.value })}
+                    placeholder="6"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="noticePeriod">Notice Period (days)</Label>
+                  <Input
+                    id="noticePeriod"
+                    type="number"
+                    value={offerLetterForm.noticePeriod}
+                    onChange={(e) => setOfferLetterForm({ ...offerLetterForm, noticePeriod: e.target.value })}
+                    placeholder="30"
+                  />
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Note: Salary revision after probation is subject to satisfactory performance evaluation.
+              </p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowOfferLetterModal(false)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                if (selectedEmployee) {
+                  generateEmployeeOfferLetterMutation.mutate({
+                    employeeId: selectedEmployee.id,
+                    probationSalary: offerLetterForm.probationSalary || undefined,
+                    confirmedSalary: offerLetterForm.confirmedSalary || undefined,
+                    probationPeriod: offerLetterForm.probationPeriod ? `${offerLetterForm.probationPeriod} months` : "6 months",
+                    noticePeriod: offerLetterForm.noticePeriod ? `${offerLetterForm.noticePeriod} days` : "30 days",
+                  });
+                }
+              }}
+              disabled={generateEmployeeOfferLetterMutation.isPending || !offerLetterForm.probationSalary || !offerLetterForm.confirmedSalary}
+              className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90"
+            >
+              {generateEmployeeOfferLetterMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Generating...
+                </>
+              ) : (
+                "Generate PDF"
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

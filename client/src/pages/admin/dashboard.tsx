@@ -280,9 +280,16 @@ export default function AdminDashboard() {
           ...getAuthHeaders(),
         },
         body: JSON.stringify({
-          ...data,
-          salary: data.salary ? parseFloat(data.salary) : null,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          designation: data.designation,
+          department: data.department,
+          salary: data.salary || null,
+          joiningDate: data.joiningDate ? new Date(data.joiningDate).toISOString() : null,
           status: "onboarding",
+          employmentType: "full_time",
         }),
       });
       if (!response.ok) {

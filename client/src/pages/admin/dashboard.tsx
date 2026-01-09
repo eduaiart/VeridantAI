@@ -25,9 +25,12 @@ import {
   BarChart3,
   TrendingUp,
   Calendar,
-  Download
+  Download,
+  Briefcase,
+  UserPlus,
+  Building2
 } from "lucide-react";
-import type { InternshipApplication, InternshipProgram } from "@shared/schema";
+import type { InternshipApplication, InternshipProgram, Employee } from "@shared/schema";
 
 interface DashboardStats {
   totalApplications: number;
@@ -113,6 +116,18 @@ export default function AdminDashboard() {
 
   const { data: programs = [] } = useQuery<InternshipProgram[]>({
     queryKey: ["/api/programs"],
+    enabled: !!user,
+  });
+
+  const { data: employees = [], isLoading: employeesLoading } = useQuery<Employee[]>({
+    queryKey: ["/api/employees"],
+    queryFn: async () => {
+      const response = await fetch("/api/employees", {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) throw new Error("Failed to fetch employees");
+      return response.json();
+    },
     enabled: !!user,
   });
 
@@ -300,6 +315,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="certificates" data-testid="tab-admin-certificates">
               <Award className="w-4 h-4 mr-2" />
               Certificates
+            </TabsTrigger>
+            <TabsTrigger value="employees" data-testid="tab-admin-employees">
+              <Briefcase className="w-4 h-4 mr-2" />
+              Employees
             </TabsTrigger>
           </TabsList>
 
@@ -844,6 +863,176 @@ export default function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Employees Tab */}
+          <TabsContent value="employees">
+            <div className="space-y-6">
+              {/* Employee Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Total Employees</p>
+                        <p className="text-2xl font-bold">{employees.length}</p>
+                      </div>
+                      <Briefcase className="w-8 h-8 text-blue-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Onboarding</p>
+                        <p className="text-2xl font-bold">{employees.filter(e => e.status === "onboarding").length}</p>
+                      </div>
+                      <UserPlus className="w-8 h-8 text-yellow-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Active</p>
+                        <p className="text-2xl font-bold">{employees.filter(e => e.status === "active").length}</p>
+                      </div>
+                      <CheckCircle className="w-8 h-8 text-green-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">On Leave</p>
+                        <p className="text-2xl font-bold">{employees.filter(e => e.status === "on_leave").length}</p>
+                      </div>
+                      <Clock className="w-8 h-8 text-orange-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Resigned/Terminated</p>
+                        <p className="text-2xl font-bold">{employees.filter(e => e.status === "resigned" || e.status === "terminated").length}</p>
+                      </div>
+                      <XCircle className="w-8 h-8 text-red-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Employee List */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building2 className="w-5 h-5" />
+                    Employee Directory
+                  </CardTitle>
+                  <CardDescription>Manage company employees and their onboarding status</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {employeesLoading ? (
+                    <div className="text-center py-8">Loading employees...</div>
+                  ) : employees.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Briefcase className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>No employees yet.</p>
+                      <p className="text-sm">Convert completed interns to employees or add new employees.</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-3 px-4 font-medium">Employee ID</th>
+                            <th className="text-left py-3 px-4 font-medium">Name</th>
+                            <th className="text-left py-3 px-4 font-medium">Designation</th>
+                            <th className="text-left py-3 px-4 font-medium">Department</th>
+                            <th className="text-left py-3 px-4 font-medium">Joining Date</th>
+                            <th className="text-left py-3 px-4 font-medium">Status</th>
+                            <th className="text-left py-3 px-4 font-medium">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {employees.map((employee) => (
+                            <tr key={employee.id} className="border-b hover:bg-muted/50">
+                              <td className="py-3 px-4">
+                                <span className="font-mono text-sm">{employee.employeeId}</span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div>
+                                  <p className="font-medium">{employee.firstName} {employee.lastName}</p>
+                                  <p className="text-sm text-muted-foreground">{employee.email}</p>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">{employee.designation}</td>
+                              <td className="py-3 px-4">
+                                <Badge variant="outline">{employee.department}</Badge>
+                              </td>
+                              <td className="py-3 px-4">
+                                {employee.joiningDate ? new Date(employee.joiningDate).toLocaleDateString() : "-"}
+                              </td>
+                              <td className="py-3 px-4">
+                                <Badge className={
+                                  employee.status === "active" ? "bg-green-100 text-green-700" :
+                                  employee.status === "onboarding" ? "bg-yellow-100 text-yellow-700" :
+                                  employee.status === "on_leave" ? "bg-orange-100 text-orange-700" :
+                                  "bg-red-100 text-red-700"
+                                }>
+                                  {employee.status?.replace("_", " ")}
+                                </Badge>
+                              </td>
+                              <td className="py-3 px-4">
+                                <Button variant="ghost" size="sm">
+                                  <Eye className="w-4 h-4 mr-1" />
+                                  View
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Convert Interns Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Convert Completed Interns</CardTitle>
+                  <CardDescription>Interns who have completed their internship can be converted to employees</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {applications.filter(a => a.status === "completed").length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>No completed internships available for conversion.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {applications.filter(a => a.status === "completed").map((app) => (
+                        <div key={app.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div>
+                            <p className="font-medium">{app.firstName} {app.lastName}</p>
+                            <p className="text-sm text-muted-foreground">{app.email} • {app.applicationNumber}</p>
+                          </div>
+                          <Button size="sm" variant="outline">
+                            <UserPlus className="w-4 h-4 mr-2" />
+                            Convert to Employee
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

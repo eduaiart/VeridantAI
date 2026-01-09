@@ -826,6 +826,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Verify employee offer letter
+  app.get("/api/verify/employee-offer/:token", async (req, res) => {
+    try {
+      const offerLetter = await storage.getEmployeeOfferLetterByToken(req.params.token);
+      
+      // Log verification attempt
+      await storage.logVerification({
+        documentType: "employee_offer_letter",
+        documentId: offerLetter?.id || "unknown",
+        verificationToken: req.params.token,
+        verifierIp: req.ip || null,
+        verifierUserAgent: req.get("User-Agent") || null,
+        verificationResult: offerLetter ? "valid" : "invalid"
+      });
+      
+      if (!offerLetter) {
+        return res.json({
+          valid: false,
+          message: "Employee offer letter not found or invalid verification code"
+        });
+      }
+      
+      // Get employee details
+      const employee = await storage.getEmployee(offerLetter.employeeId);
+      
+      res.json({
+        valid: true,
+        offerLetter: {
+          offerNumber: offerLetter.offerNumber,
+          recipientName: offerLetter.recipientName,
+          position: offerLetter.position,
+          department: offerLetter.department,
+          joiningDate: offerLetter.joiningDate,
+          employeeId: employee?.employeeId || null
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Verification failed" });
+    }
+  });
+
   // ============== PDF DOWNLOAD ROUTES ==============
 
   // Download certificate PDF

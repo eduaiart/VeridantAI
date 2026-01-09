@@ -45,7 +45,9 @@ interface OfferVerification {
     position: string;
     department?: string;
     startDate?: string;
-    status: string;
+    joiningDate?: string;
+    status?: string;
+    employeeId?: string;
   };
 }
 
@@ -53,14 +55,7 @@ export default function VerifyPage() {
   const [, params] = useRoute("/verify/:token");
   const [verificationCode, setVerificationCode] = useState(params?.token || "");
   const [activeTab, setActiveTab] = useState("certificate");
-
-  useEffect(() => {
-    if (params?.token) {
-      setVerificationCode(params.token);
-      // Auto-verify if token is in URL
-      certificateMutation.mutate(params.token);
-    }
-  }, [params?.token]);
+  const [documentType, setDocumentType] = useState<"certificate" | "offer" | "employee-offer" | null>(null);
 
   const certificateMutation = useMutation<CertificateVerification, Error, string>({
     mutationFn: async (token: string) => {
@@ -76,13 +71,61 @@ export default function VerifyPage() {
     },
   });
 
+  const employeeOfferMutation = useMutation<OfferVerification, Error, string>({
+    mutationFn: async (token: string) => {
+      const response = await fetch(`/api/verify/employee-offer/${token}`);
+      return response.json();
+    },
+  });
+
+  useEffect(() => {
+    if (params?.token) {
+      setVerificationCode(params.token);
+      // Auto-verify by trying all document types
+      verifyAllTypes(params.token);
+    }
+  }, [params?.token]);
+
+  const verifyAllTypes = async (token: string) => {
+    // Try certificate first
+    const certResult = await certificateMutation.mutateAsync(token);
+    if (certResult.valid) {
+      setDocumentType("certificate");
+      setActiveTab("certificate");
+      return;
+    }
+    
+    // Try internship offer letter
+    const offerResult = await offerMutation.mutateAsync(token);
+    if (offerResult.valid) {
+      setDocumentType("offer");
+      setActiveTab("offer");
+      return;
+    }
+    
+    // Try employee offer letter
+    const empOfferResult = await employeeOfferMutation.mutateAsync(token);
+    if (empOfferResult.valid) {
+      setDocumentType("employee-offer");
+      setActiveTab("offer");
+      return;
+    }
+    
+    // None found - show certificate tab with error
+    setDocumentType("certificate");
+    setActiveTab("certificate");
+  };
+
   const handleVerify = () => {
     if (!verificationCode) return;
     
     if (activeTab === "certificate") {
       certificateMutation.mutate(verificationCode);
+      setDocumentType("certificate");
     } else {
+      // Try internship offer first, then employee offer
       offerMutation.mutate(verificationCode);
+      setDocumentType("offer");
     }
   };
 
@@ -217,7 +260,8 @@ export default function VerifyPage() {
   };
 
   const renderOfferResult = () => {
-    if (offerMutation.isPending) {
+    // Check if any mutation is pending
+    if (offerMutation.isPending || employeeOfferMutation.isPending) {
       return (
         <div className="text-center py-8">
           <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -226,10 +270,18 @@ export default function VerifyPage() {
       );
     }
 
-    if (!offerMutation.data) return null;
+    // Check employee offer letter first if that's the document type
+    const employeeData = employeeOfferMutation.data;
+    const internshipData = offerMutation.data;
+    
+    // Use employee offer data if valid, otherwise use internship data
+    const data = (employeeData?.valid && employeeData?.offerLetter) ? employeeData : internshipData;
+    const isEmployeeOffer = documentType === "employee-offer" || (employeeData?.valid && employeeData?.offerLetter);
+    
+    if (!data) return null;
 
-    if (offerMutation.data.valid && offerMutation.data.offerLetter) {
-      const offer = offerMutation.data.offerLetter;
+    if (data.valid && data.offerLetter) {
+      const offer = data.offerLetter;
       return (
         <Card className="border-green-200 bg-green-50">
           <CardContent className="pt-6">
@@ -239,7 +291,7 @@ export default function VerifyPage() {
               </div>
             </div>
             <h3 className="text-xl font-bold text-center text-green-700 mb-6">
-              Offer Letter Verified Successfully
+              {isEmployeeOffer ? "Employment Offer Letter Verified Successfully" : "Offer Letter Verified Successfully"}
             </h3>
             
             <div className="space-y-4 bg-white rounded-lg p-6">
@@ -277,19 +329,47 @@ export default function VerifyPage() {
                 </div>
               )}
               
-              <div className="flex items-center gap-3">
-                <Shield className="w-5 h-5 text-primary" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
-                  <Badge className={
-                    offer.status === "accepted" ? "bg-green-100 text-green-700" :
-                    offer.status === "rejected" ? "bg-red-100 text-red-700" :
-                    "bg-yellow-100 text-yellow-700"
-                  }>
-                    {offer.status.toUpperCase()}
-                  </Badge>
+              {offer.employeeId && (
+                <div className="flex items-center gap-3 pb-4 border-b">
+                  <User className="w-5 h-5 text-primary" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Employee ID</p>
+                    <p className="font-semibold">{offer.employeeId}</p>
+                  </div>
                 </div>
-              </div>
+              )}
+              
+              {(offer.joiningDate || offer.startDate) && (
+                <div className="flex items-center gap-3 pb-4 border-b">
+                  <Calendar className="w-5 h-5 text-primary" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">{isEmployeeOffer ? "Joining Date" : "Start Date"}</p>
+                    <p className="font-semibold">
+                      {new Date(offer.joiningDate || offer.startDate!).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric"
+                      })}
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {offer.status && (
+                <div className="flex items-center gap-3">
+                  <Shield className="w-5 h-5 text-primary" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Status</p>
+                    <Badge className={
+                      offer.status === "accepted" ? "bg-green-100 text-green-700" :
+                      offer.status === "rejected" ? "bg-red-100 text-red-700" :
+                      "bg-yellow-100 text-yellow-700"
+                    }>
+                      {offer.status.toUpperCase()}
+                    </Badge>
+                  </div>
+                </div>
+              )}
             </div>
             
             <p className="text-center text-sm text-muted-foreground mt-6">
@@ -312,7 +392,7 @@ export default function VerifyPage() {
             Offer Letter Not Found
           </h3>
           <p className="text-center text-muted-foreground">
-            {offerMutation.data.message}
+            {data?.message || "The verification code could not be matched to any offer letter in our records."}
           </p>
         </CardContent>
       </Card>
@@ -388,7 +468,7 @@ export default function VerifyPage() {
 
             {/* Results */}
             {activeTab === "certificate" && certificateMutation.data && renderCertificateResult()}
-            {activeTab === "offer" && offerMutation.data && renderOfferResult()}
+            {activeTab === "offer" && (offerMutation.data || employeeOfferMutation.data) && renderOfferResult()}
 
             {/* Info Section */}
             <div className="mt-12 grid md:grid-cols-2 gap-6">

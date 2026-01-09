@@ -4,6 +4,7 @@ import {
   users, contacts, internshipPrograms, internshipApplications,
   applicationStatusHistory, messages, emailTemplates,
   certificates, offerLetters, verificationLogs, weeklyReports,
+  employees, employmentDocuments, employmentHistory,
   type User, type InsertUser,
   type Contact, type InsertContact,
   type InternshipProgram, type InsertInternshipProgram,
@@ -14,7 +15,10 @@ import {
   type Certificate, type InsertCertificate,
   type OfferLetter, type InsertOfferLetter,
   type VerificationLog,
-  type WeeklyReport, type InsertWeeklyReport
+  type WeeklyReport, type InsertWeeklyReport,
+  type Employee, type InsertEmployee,
+  type EmploymentDocument, type InsertEmploymentDocument,
+  type EmploymentHistory
 } from "@shared/schema";
 import { IStorage } from "./storage";
 import bcrypt from "bcryptjs";
@@ -40,6 +44,11 @@ function generateOfferNumber(count: number): string {
 
 function generateVerificationToken(): string {
   return randomUUID().replace(/-/g, "").substring(0, 12).toUpperCase();
+}
+
+function generateEmployeeId(count: number): string {
+  const num = (count + 1).toString().padStart(3, "0");
+  return `VAI-EMP-${num}`;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -526,6 +535,120 @@ export class DatabaseStorage implements IStorage {
       .where(eq(weeklyReports.id, id))
       .returning();
     return result[0];
+  }
+
+  // ============== EMPLOYEES ==============
+
+  async createEmployee(employee: InsertEmployee): Promise<Employee> {
+    const count = await this.getEmployeeCount();
+    const employeeId = generateEmployeeId(count);
+    
+    const result = await db.insert(employees).values({
+      id: randomUUID(),
+      employeeId,
+      ...employee,
+      status: "onboarding",
+    }).returning();
+    return result[0];
+  }
+
+  async getEmployees(filters?: { status?: string; department?: string }): Promise<Employee[]> {
+    if (filters?.status && filters?.department) {
+      return await db.select().from(employees)
+        .where(and(
+          eq(employees.status, filters.status),
+          eq(employees.department, filters.department)
+        ))
+        .orderBy(desc(employees.createdAt));
+    }
+    if (filters?.status) {
+      return await db.select().from(employees)
+        .where(eq(employees.status, filters.status))
+        .orderBy(desc(employees.createdAt));
+    }
+    if (filters?.department) {
+      return await db.select().from(employees)
+        .where(eq(employees.department, filters.department))
+        .orderBy(desc(employees.createdAt));
+    }
+    return await db.select().from(employees).orderBy(desc(employees.createdAt));
+  }
+
+  async getEmployee(id: string): Promise<Employee | undefined> {
+    const result = await db.select().from(employees).where(eq(employees.id, id));
+    return result[0];
+  }
+
+  async getEmployeeByEmployeeId(employeeId: string): Promise<Employee | undefined> {
+    const result = await db.select().from(employees).where(eq(employees.employeeId, employeeId));
+    return result[0];
+  }
+
+  async updateEmployee(id: string, data: Partial<Employee>): Promise<Employee | undefined> {
+    const result = await db.update(employees)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(employees.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async getEmployeeCount(): Promise<number> {
+    const result = await db.select({ count: sql<number>`count(*)::int` }).from(employees);
+    return result[0]?.count || 0;
+  }
+
+  // ============== EMPLOYMENT DOCUMENTS ==============
+
+  async createEmploymentDocument(doc: InsertEmploymentDocument): Promise<EmploymentDocument> {
+    const result = await db.insert(employmentDocuments).values({
+      id: randomUUID(),
+      ...doc,
+      isSubmitted: false,
+      isVerified: false,
+    }).returning();
+    return result[0];
+  }
+
+  async getEmploymentDocuments(employeeId: string): Promise<EmploymentDocument[]> {
+    return await db.select().from(employmentDocuments)
+      .where(eq(employmentDocuments.employeeId, employeeId))
+      .orderBy(employmentDocuments.documentType);
+  }
+
+  async updateEmploymentDocument(id: string, data: Partial<EmploymentDocument>): Promise<EmploymentDocument | undefined> {
+    const result = await db.update(employmentDocuments)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(employmentDocuments.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // ============== EMPLOYMENT HISTORY ==============
+
+  async addEmploymentHistory(
+    employeeId: string, 
+    changeType: string, 
+    previousValue: string | null, 
+    newValue: string, 
+    changedBy: string | null, 
+    notes?: string
+  ): Promise<EmploymentHistory> {
+    const result = await db.insert(employmentHistory).values({
+      id: randomUUID(),
+      employeeId,
+      changeType,
+      previousValue,
+      newValue,
+      changedBy,
+      notes,
+    }).returning();
+    return result[0];
+  }
+
+  async getEmploymentHistory(employeeId: string): Promise<EmploymentHistory[]> {
+    return await db.select().from(employmentHistory)
+      .where(eq(employmentHistory.employeeId, employeeId))
+      .orderBy(desc(employmentHistory.createdAt));
   }
 }
 

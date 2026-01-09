@@ -9,7 +9,10 @@ import {
   type Certificate, type InsertCertificate,
   type OfferLetter, type InsertOfferLetter,
   type VerificationLog,
-  type WeeklyReport, type InsertWeeklyReport
+  type WeeklyReport, type InsertWeeklyReport,
+  type Employee, type InsertEmployee,
+  type EmploymentDocument, type InsertEmploymentDocument,
+  type EmploymentHistory
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -80,6 +83,23 @@ export interface IStorage {
   createWeeklyReport(report: InsertWeeklyReport): Promise<WeeklyReport>;
   getWeeklyReports(applicationId: string): Promise<WeeklyReport[]>;
   updateWeeklyReport(id: string, data: Partial<WeeklyReport>): Promise<WeeklyReport | undefined>;
+  
+  // Employees
+  createEmployee(employee: InsertEmployee): Promise<Employee>;
+  getEmployees(filters?: { status?: string; department?: string }): Promise<Employee[]>;
+  getEmployee(id: string): Promise<Employee | undefined>;
+  getEmployeeByEmployeeId(employeeId: string): Promise<Employee | undefined>;
+  updateEmployee(id: string, data: Partial<Employee>): Promise<Employee | undefined>;
+  getEmployeeCount(): Promise<number>;
+  
+  // Employment Documents
+  createEmploymentDocument(doc: InsertEmploymentDocument): Promise<EmploymentDocument>;
+  getEmploymentDocuments(employeeId: string): Promise<EmploymentDocument[]>;
+  updateEmploymentDocument(id: string, data: Partial<EmploymentDocument>): Promise<EmploymentDocument | undefined>;
+  
+  // Employment History
+  addEmploymentHistory(employeeId: string, changeType: string, previousValue: string | null, newValue: string, changedBy: string | null, notes?: string): Promise<EmploymentHistory>;
+  getEmploymentHistory(employeeId: string): Promise<EmploymentHistory[]>;
 }
 
 // Helper to generate application numbers
@@ -106,6 +126,12 @@ function generateOfferNumber(count: number): string {
 // Helper to generate verification tokens
 function generateVerificationToken(): string {
   return randomUUID().replace(/-/g, '').substring(0, 16).toUpperCase();
+}
+
+// Helper to generate employee IDs
+function generateEmployeeId(count: number): string {
+  const paddedCount = String(count + 1).padStart(3, '0');
+  return `VAI-EMP-${paddedCount}`;
 }
 
 export class MemStorage implements IStorage {

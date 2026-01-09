@@ -261,6 +261,96 @@ export const weeklyReports = pgTable("weekly_reports", {
   reviewedBy: varchar("reviewed_by").references(() => users.id),
 });
 
+// ============== EMPLOYMENT MANAGEMENT TABLES ==============
+
+export const employees = pgTable("employees", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: text("employee_id").notNull().unique(), // e.g., "VAI-EMP-001"
+  userId: varchar("user_id").references(() => users.id),
+  applicationId: varchar("application_id").references(() => internshipApplications.id), // If converted from intern
+  
+  // Personal Information
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  dateOfBirth: timestamp("date_of_birth"),
+  gender: text("gender"),
+  address: text("address"),
+  city: text("city"),
+  state: text("state"),
+  pincode: text("pincode"),
+  
+  // Employment Details
+  designation: text("designation").notNull(), // Job title
+  department: text("department").notNull(), // 'Engineering' | 'Finance' | 'HR' | 'Marketing' | 'Operations'
+  employmentType: text("employment_type").default("full_time"), // 'full_time' | 'part_time' | 'contract' | 'intern_converted'
+  joiningDate: timestamp("joining_date").notNull(),
+  probationEndDate: timestamp("probation_end_date"),
+  confirmationDate: timestamp("confirmation_date"),
+  
+  // Compensation
+  salary: text("salary"),
+  bankAccountNumber: text("bank_account_number"),
+  bankName: text("bank_name"),
+  ifscCode: text("ifsc_code"),
+  panNumber: text("pan_number"),
+  
+  // Reporting
+  reportingManagerId: varchar("reporting_manager_id").references(() => users.id),
+  
+  // Status
+  status: text("status").default("onboarding"), // 'onboarding' | 'active' | 'on_leave' | 'resigned' | 'terminated'
+  statusReason: text("status_reason"),
+  lastWorkingDate: timestamp("last_working_date"),
+  
+  // Emergency Contact
+  emergencyContactName: text("emergency_contact_name"),
+  emergencyContactPhone: text("emergency_contact_phone"),
+  emergencyContactRelation: text("emergency_contact_relation"),
+  
+  // Metadata
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  createdBy: varchar("created_by").references(() => users.id),
+});
+
+export const employmentDocuments = pgTable("employment_documents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  
+  // Document Details
+  documentType: text("document_type").notNull(), // 'id_proof' | 'pan_card' | 'address_proof' | 'education' | 'experience' | 'offer_letter' | 'nda' | 'bank_details' | 'photo'
+  documentName: text("document_name").notNull(),
+  documentUrl: text("document_url"),
+  
+  // Verification
+  isSubmitted: boolean("is_submitted").default(false),
+  isVerified: boolean("is_verified").default(false),
+  verifiedBy: varchar("verified_by").references(() => users.id),
+  verifiedAt: timestamp("verified_at"),
+  verificationNotes: text("verification_notes"),
+  
+  // Metadata
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const employmentHistory = pgTable("employment_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  
+  // Change Details
+  changeType: text("change_type").notNull(), // 'status_change' | 'designation_change' | 'department_change' | 'salary_change' | 'document_verified'
+  previousValue: text("previous_value"),
+  newValue: text("new_value").notNull(),
+  notes: text("notes"),
+  
+  // Metadata
+  changedBy: varchar("changed_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // ============== INSERT SCHEMAS ==============
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -320,6 +410,21 @@ export const insertWeeklyReportSchema = createInsertSchema(weeklyReports).omit({
   reviewedAt: true,
 });
 
+export const insertEmployeeSchema = createInsertSchema(employees).omit({
+  id: true,
+  employeeId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEmploymentDocumentSchema = createInsertSchema(employmentDocuments).omit({
+  id: true,
+  isSubmitted: true,
+  isVerified: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // ============== TYPES ==============
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -341,6 +446,11 @@ export type OfferLetter = typeof offerLetters.$inferSelect;
 export type VerificationLog = typeof verificationLogs.$inferSelect;
 export type InsertWeeklyReport = z.infer<typeof insertWeeklyReportSchema>;
 export type WeeklyReport = typeof weeklyReports.$inferSelect;
+export type InsertEmployee = z.infer<typeof insertEmployeeSchema>;
+export type Employee = typeof employees.$inferSelect;
+export type InsertEmploymentDocument = z.infer<typeof insertEmploymentDocumentSchema>;
+export type EmploymentDocument = typeof employmentDocuments.$inferSelect;
+export type EmploymentHistory = typeof employmentHistory.$inferSelect;
 
 // ============== VALIDATION SCHEMAS ==============
 

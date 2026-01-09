@@ -653,9 +653,7 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
       const compensationDetails = [
         `• Monthly Salary: ${salaryDisplay} (Cost to Company)`,
         "• Salary will be credited to your designated bank account on the last working day of each month",
-        "• Provident Fund contribution as per statutory requirements (12% employer + 12% employee)",
-        "• Professional Tax deductions as applicable",
-        "• Gratuity as per the Payment of Gratuity Act, 1972"
+        "• Statutory benefits (PF, ESI, Gratuity) will be provided as per applicable laws once the company meets eligibility thresholds"
       ];
       compensationDetails.forEach(item => {
         doc.text(item, { indent: 20, lineGap: 2 });

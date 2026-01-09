@@ -491,6 +491,16 @@ interface EmployeeOfferDetails {
   salary?: string;
   probationPeriod?: string;
   noticePeriod?: string;
+  workingHours?: string;
+  workingDays?: string;
+  reportingManager?: string;
+  reportingManagerPhone?: string;
+  reportingTime?: string;
+  acceptanceDeadline?: string;
+  paidLeave?: string;
+  sickLeave?: string;
+  casualLeave?: string;
+  publicHolidays?: string;
 }
 
 export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetails, baseUrl: string): Promise<Buffer> {
@@ -515,6 +525,20 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
       const salaryDisplay = details.salary || (employee.salary ? `₹${Number(employee.salary).toLocaleString()}` : "[To be discussed]");
       const probationPeriod = details.probationPeriod || "3 months";
       const noticePeriod = details.noticePeriod || "30 days";
+      const workingHours = details.workingHours || "9:30 AM to 6:30 PM";
+      const workingDays = details.workingDays || "Monday to Friday";
+      const reportingManager = details.reportingManager || "HR Department";
+      const reportingManagerPhone = details.reportingManagerPhone || COMPANY_PHONE;
+      const reportingTime = details.reportingTime || "9:30 AM";
+      const paidLeave = details.paidLeave || "18 days per year";
+      const sickLeave = details.sickLeave || "12 days per year";
+      const casualLeave = details.casualLeave || "6 days per year";
+      const publicHolidays = details.publicHolidays || "As per Government of India calendar";
+      
+      // Calculate acceptance deadline (14 days from current date)
+      const acceptanceDate = new Date();
+      acceptanceDate.setDate(acceptanceDate.getDate() + 14);
+      const acceptanceDeadline = details.acceptanceDeadline || acceptanceDate.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 
       // ============ PAGE 1 ============
       // Logo and Header
@@ -542,13 +566,14 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
          .text(`Offer Number: ${offerNumber}`);
       doc.moveDown(1);
 
-      // Recipient Address
-      const fullAddress = [employee.address, employee.city, employee.state, employee.pincode].filter(Boolean).join(", ") || "[Address not provided]";
+      // Recipient Address with Phone
+      const fullAddress = [employee.address, employee.city, employee.state, employee.pincode].filter(Boolean).join(", ");
       
       doc.fontSize(10)
          .fillColor("#1e293b")
          .text(`${employee.firstName} ${employee.lastName}`)
-         .text(fullAddress);
+         .text(fullAddress || "[Address to be updated]")
+         .text(`Contact: ${employee.phone || "[Phone not provided]"}`);
       doc.moveDown(1);
 
       // Subject
@@ -572,7 +597,7 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
       // Position Details
       doc.fontSize(11)
          .fillColor("#0EA5E9")
-         .text("Position Details");
+         .text("1. Position Details");
       doc.fontSize(10)
          .fillColor("#374151");
       
@@ -581,6 +606,7 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
         `• Department: ${employee.department}`,
         `• Employment Type: ${employee.employmentType?.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase()) || "Full Time"}`,
         `• Joining Date: ${joiningDate}`,
+        `• Reporting To: ${reportingManager}`,
         `• Reporting Location: ${COMPANY_ADDRESS}`
       ];
       positionDetails.forEach(item => {
@@ -588,10 +614,33 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
       });
       doc.moveDown(1);
 
+      // Roles & Responsibilities
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("2. Roles & Responsibilities");
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text(
+           `As ${employee.designation} in the ${employee.department} department, your key responsibilities will include:`,
+           { lineGap: 3 }
+         );
+      doc.moveDown(0.5);
+
+      const responsibilities = getResponsibilitiesForRole(employee.designation, employee.department);
+      responsibilities.forEach(item => {
+        doc.text(item, { indent: 20, lineGap: 2 });
+      });
+      doc.moveDown(0.5);
+      doc.text(
+        "Your detailed job description and key performance indicators will be discussed during your onboarding.",
+        { lineGap: 3, indent: 20 }
+      );
+      doc.moveDown(1);
+
       // Compensation
       doc.fontSize(11)
          .fillColor("#0EA5E9")
-         .text("Compensation & Benefits");
+         .text("3. Compensation & Benefits");
       doc.fontSize(10)
          .fillColor("#374151")
          .text(
@@ -603,11 +652,56 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
       const compensationDetails = [
         `• Monthly Salary: ${salaryDisplay} (Cost to Company)`,
         "• Salary will be credited to your designated bank account on the last working day of each month",
-        "• Provident Fund contribution as per statutory requirements",
-        "• Medical benefits as per company policy",
-        "• Leave entitlements as per company policy"
+        "• Provident Fund contribution as per statutory requirements (12% employer + 12% employee)",
+        "• Professional Tax deductions as applicable",
+        "• Gratuity as per the Payment of Gratuity Act, 1972"
       ];
       compensationDetails.forEach(item => {
+        doc.text(item, { indent: 20, lineGap: 2 });
+      });
+
+      // ============ PAGE 2 ============
+      doc.addPage();
+
+      // Working Hours & Schedule
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("4. Working Hours & Schedule");
+      doc.fontSize(10)
+         .fillColor("#374151");
+      
+      const workingDetails = [
+        `• Standard Working Hours: ${workingHours}`,
+        `• Working Days: ${workingDays}`,
+        "• Lunch Break: 1 hour (typically 1:00 PM - 2:00 PM)",
+        "• Overtime Policy: Any overtime work must be pre-approved by your reporting manager. Compensatory time-off may be granted as per company policy.",
+        "• Work from Home: As per company policy and manager discretion"
+      ];
+      workingDetails.forEach(item => {
+        doc.text(item, { indent: 20, lineGap: 2 });
+      });
+      doc.moveDown(1);
+
+      // Leave Policy
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("5. Leave Policy");
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text("You are entitled to the following leaves:", { lineGap: 3 });
+      doc.moveDown(0.5);
+
+      const leaveDetails = [
+        `• Earned/Paid Leave: ${paidLeave} (accrues monthly, encashable up to 50%)`,
+        `• Sick Leave: ${sickLeave} (requires medical certificate for 3+ consecutive days)`,
+        `• Casual Leave: ${casualLeave}`,
+        `• Public Holidays: ${publicHolidays}`,
+        "• Maternity Leave: 26 weeks as per Maternity Benefit Act, 1961",
+        "• Paternity Leave: 7 days",
+        "• Bereavement Leave: 5 days for immediate family",
+        "• Marriage Leave: 5 days (one-time)"
+      ];
+      leaveDetails.forEach(item => {
         doc.text(item, { indent: 20, lineGap: 2 });
       });
       doc.moveDown(1);
@@ -615,11 +709,11 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
       // Probation Period
       doc.fontSize(11)
          .fillColor("#0EA5E9")
-         .text("Probation Period");
+         .text("6. Probation Period");
       doc.fontSize(10)
          .fillColor("#374151")
          .text(
-           `You will be on probation for a period of ${probationPeriod} from your date of joining. During the probation period, either party may terminate the employment with 7 days' written notice. Upon successful completion of probation, you will be confirmed as a permanent employee of the Company.`,
+           `You will be on probation for a period of ${probationPeriod} from your date of joining. During the probation period, either party may terminate the employment with 7 days' written notice. Upon successful completion of probation based on performance evaluation, you will be confirmed as a permanent employee of the Company.`,
            { align: "justify", lineGap: 3 }
          );
       doc.moveDown(1);
@@ -627,33 +721,33 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
       // Notice Period
       doc.fontSize(11)
          .fillColor("#0EA5E9")
-         .text("Notice Period");
+         .text("7. Notice Period");
       doc.fontSize(10)
          .fillColor("#374151")
          .text(
-           `After confirmation, either party may terminate the employment by providing ${noticePeriod} written notice. The Company reserves the right to pay salary in lieu of notice period at its discretion.`,
-           { align: "justify", lineGap: 3 }
-         );
-
-      // ============ PAGE 2 ============
-      doc.addPage();
-
-      // Confidentiality
-      doc.fontSize(11)
-         .fillColor("#0EA5E9")
-         .text("Confidentiality & Non-Disclosure");
-      doc.fontSize(10)
-         .fillColor("#374151")
-         .text(
-           "During your employment and thereafter, you agree to maintain strict confidentiality regarding all proprietary information, trade secrets, business strategies, client information, source code, algorithms, and any other confidential information belonging to the Company. You shall not disclose any such information to third parties without prior written authorization.",
+           `After confirmation, either party may terminate the employment by providing ${noticePeriod} written notice. The Company reserves the right to accept payment in lieu of notice period or waive the notice period at its discretion. Failure to serve the complete notice period may result in recovery of salary for the shortfall period.`,
            { align: "justify", lineGap: 3 }
          );
       doc.moveDown(1);
 
+      // Confidentiality
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("8. Confidentiality & Non-Disclosure");
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text(
+           "During your employment and for a period of 2 years thereafter, you agree to maintain strict confidentiality regarding all proprietary information, trade secrets, business strategies, client information, source code, algorithms, and any other confidential information belonging to the Company. You will be required to sign a separate Non-Disclosure Agreement (NDA) on your joining date.",
+           { align: "justify", lineGap: 3 }
+         );
+
+      // ============ PAGE 3 ============
+      doc.addPage();
+
       // Intellectual Property
       doc.fontSize(11)
          .fillColor("#0EA5E9")
-         .text("Intellectual Property");
+         .text("9. Intellectual Property");
       doc.fontSize(10)
          .fillColor("#374151")
          .text(
@@ -662,10 +756,39 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
          );
       doc.moveDown(1);
 
+      // Non-Compete & Non-Solicitation
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("10. Non-Compete & Non-Solicitation");
+      doc.fontSize(10)
+         .fillColor("#374151");
+      
+      const nonCompeteDetails = [
+        "• During employment and for 12 months after, you shall not directly or indirectly engage in any business that competes with the Company within India.",
+        "• You shall not solicit or attempt to solicit any employee, consultant, or contractor of the Company.",
+        "• You shall not solicit or attempt to solicit any client or customer of the Company for a period of 12 months after termination."
+      ];
+      nonCompeteDetails.forEach(item => {
+        doc.text(item, { indent: 20, lineGap: 2, align: "justify" });
+      });
+      doc.moveDown(1);
+
+      // Background Verification
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("11. Background Verification");
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text(
+           "This offer is contingent upon successful completion of background verification, which may include verification of educational credentials, previous employment history, criminal background check, and reference checks. Falsification of any information provided may result in immediate termination of employment.",
+           { align: "justify", lineGap: 3 }
+         );
+      doc.moveDown(1);
+
       // Company Policies
       doc.fontSize(11)
          .fillColor("#0EA5E9")
-         .text("Company Policies & Code of Conduct");
+         .text("12. Company Policies & Code of Conduct");
       doc.fontSize(10)
          .fillColor("#374151")
          .text("As an employee, you are expected to:", { lineGap: 3 });
@@ -676,18 +799,19 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
         "• Maintain professional behavior and integrity at all times",
         "• Follow data security and information technology policies",
         "• Comply with all applicable laws and regulations",
-        "• Report any conflicts of interest or unethical behavior",
-        "• Maintain regular attendance and punctuality"
+        "• Report any conflicts of interest or unethical behavior"
       ];
       policies.forEach(item => {
         doc.text(item, { indent: 20, lineGap: 2 });
       });
-      doc.moveDown(1);
+
+      // ============ PAGE 4 ============
+      doc.addPage();
 
       // Documents Required
       doc.fontSize(11)
          .fillColor("#0EA5E9")
-         .text("Documents Required");
+         .text("13. Documents Required");
       doc.fontSize(10)
          .fillColor("#374151")
          .text("Please submit the following documents on or before your joining date:", { lineGap: 3 });
@@ -695,40 +819,95 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
 
       const documents = [
         "1. Signed copy of this offer letter",
-        "2. Copy of valid government-issued photo ID (Aadhaar/PAN/Passport)",
-        "3. Recent passport-sized photographs (4 copies)",
-        "4. Educational certificates and mark sheets",
-        "5. Previous employment relieving letter and experience certificates (if applicable)",
-        "6. Last 3 months' salary slips (if applicable)",
-        "7. Bank account details for salary credit",
-        "8. PAN Card copy",
-        "9. Address proof"
+        "2. Aadhaar Card (original for verification, photocopy to submit)",
+        "3. PAN Card copy",
+        "4. Recent passport-sized photographs (4 copies)",
+        "5. Educational certificates and mark sheets (all degrees)",
+        "6. Previous employment relieving letter (if applicable)",
+        "7. Experience certificates from previous employers (if applicable)",
+        "8. Last 3 months' salary slips (if applicable)",
+        "9. Bank account details (cancelled cheque or passbook front page)",
+        "10. Address proof (Utility bill / Rental agreement)",
+        "11. Passport copy (if available)"
       ];
       documents.forEach(item => {
         doc.text(item, { indent: 20, lineGap: 2 });
       });
+      doc.moveDown(1);
 
-      // ============ PAGE 3 ============
-      doc.addPage();
+      // First Day Instructions
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("14. First Day Instructions");
+      doc.fontSize(10)
+         .fillColor("#374151");
+      
+      const firstDayDetails = [
+        `• Reporting Date: ${joiningDate}`,
+        `• Reporting Time: ${reportingTime}`,
+        `• Report To: ${reportingManager}`,
+        `• Contact Number: ${reportingManagerPhone}`,
+        `• Location: ${COMPANY_ADDRESS}`,
+        "• What to Bring: All documents listed above, original certificates for verification, and a valid photo ID"
+      ];
+      firstDayDetails.forEach(item => {
+        doc.text(item, { indent: 20, lineGap: 2 });
+      });
+      doc.moveDown(1);
 
       // Governing Law
       doc.fontSize(11)
          .fillColor("#0EA5E9")
-         .text("Governing Law");
+         .text("15. Governing Law");
       doc.fontSize(10)
          .fillColor("#374151")
          .text(
            "This offer letter and your employment shall be governed by the laws of India. Any disputes arising out of or in connection with this employment shall be subject to the exclusive jurisdiction of the courts in Patna, Bihar.",
            { align: "justify", lineGap: 3 }
          );
+      doc.moveDown(1);
+
+      // Acceptance Deadline
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("16. Acceptance Deadline");
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text(
+           `Please sign and return a copy of this offer letter by ${acceptanceDeadline} to confirm your acceptance. Failure to respond by this date may result in this offer being withdrawn. If you have any questions, please contact HR at ${COMPANY_EMAIL} or ${COMPANY_PHONE}.`,
+           { align: "justify", lineGap: 3 }
+         );
+
+      // ============ PAGE 5 ============
+      doc.addPage();
+
+      // Additional Agreements
+      doc.fontSize(11)
+         .fillColor("#0EA5E9")
+         .text("17. Additional Agreements");
+      doc.fontSize(10)
+         .fillColor("#374151")
+         .text("On your joining date, you will be required to sign the following additional agreements:", { lineGap: 3 });
+      doc.moveDown(0.5);
+
+      const agreements = [
+        "• Non-Disclosure Agreement (NDA)",
+        "• Invention Assignment Agreement",
+        "• Code of Conduct Acknowledgement",
+        "• IT Security Policy Acknowledgement",
+        "• Anti-Harassment Policy Acknowledgement"
+      ];
+      agreements.forEach(item => {
+        doc.text(item, { indent: 20, lineGap: 2 });
+      });
       doc.moveDown(1.5);
 
       // Closing
       doc.text(
-        "We are excited to welcome you to the Veridant AI family. We believe your skills and experience will be valuable additions to our team. Please sign and return a copy of this offer letter to confirm your acceptance.",
+        "We are excited to welcome you to the Veridant AI family. We believe your skills and experience will be valuable additions to our team. Should you have any questions regarding this offer, please do not hesitate to contact our HR department.",
         { align: "justify", lineGap: 3 }
       );
-      doc.moveDown(2);
+      doc.moveDown(1.5);
 
       doc.text("Yours sincerely,");
       doc.moveDown(0.5);
@@ -745,9 +924,9 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
       doc.text("Authorized Signatory");
       doc.text("Human Resources Department");
       doc.text(COMPANY_NAME);
-      doc.text(`Email: ${COMPANY_EMAIL}`);
+      doc.text(`Email: ${COMPANY_EMAIL} | Phone: ${COMPANY_PHONE}`);
 
-      doc.moveDown(2);
+      doc.moveDown(1.5);
       doc.moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y).stroke("#e2e8f0");
       doc.moveDown(1);
 
@@ -760,16 +939,18 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
       doc.fontSize(10)
          .fillColor("#374151")
          .text(
-           `I, ${employee.firstName} ${employee.lastName}, accept the employment offer from ${COMPANY_NAME} on the terms and conditions set out in this letter. I confirm that I have read, understood, and agree to all the terms mentioned above.`,
+           `I, ${employee.firstName} ${employee.lastName}, hereby accept the employment offer from ${COMPANY_NAME} on the terms and conditions set out in this letter. I confirm that I have read, understood, and agree to all the terms mentioned above. I understand that this offer is contingent upon successful background verification.`,
            { align: "justify", lineGap: 3 }
          );
-      doc.moveDown(1.5);
+      doc.moveDown(1);
 
       doc.text("Printed Name: _________________________________");
       doc.moveDown(0.5);
       doc.text("Signature: _________________________________");
       doc.moveDown(0.5);
       doc.text("Date: _________________________________");
+      doc.moveDown(0.5);
+      doc.text("Place: _________________________________");
 
       // Calculate safe positioning within printable area
       const printableBottom = doc.page.height - doc.page.margins.bottom;
@@ -800,4 +981,64 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
       reject(error);
     }
   });
+}
+
+// Helper function to get role-specific responsibilities
+function getResponsibilitiesForRole(designation: string, department: string): string[] {
+  const designationLower = designation.toLowerCase();
+  const departmentLower = department.toLowerCase();
+  
+  if (designationLower.includes("consultant") || designationLower.includes("associate")) {
+    return [
+      "• Collaborate with cross-functional teams to deliver client projects on time",
+      "• Analyze business requirements and propose technical solutions",
+      "• Prepare project documentation, reports, and presentations",
+      "• Participate in client meetings and stakeholder communications",
+      "• Support senior team members in project planning and execution",
+      "• Maintain project timelines and ensure quality deliverables"
+    ];
+  }
+  
+  if (departmentLower.includes("engineering") || designationLower.includes("developer") || designationLower.includes("engineer")) {
+    return [
+      "• Design, develop, and maintain software applications and systems",
+      "• Write clean, efficient, and well-documented code",
+      "• Participate in code reviews and maintain coding standards",
+      "• Collaborate with product and design teams on feature development",
+      "• Debug and resolve technical issues in a timely manner",
+      "• Stay updated with latest technologies and best practices"
+    ];
+  }
+  
+  if (departmentLower.includes("finance") || designationLower.includes("accountant")) {
+    return [
+      "• Prepare and maintain financial statements and reports",
+      "• Handle accounts payable and receivable processes",
+      "• Ensure compliance with tax regulations and statutory requirements",
+      "• Support budgeting, forecasting, and financial planning activities",
+      "• Maintain accurate financial records and documentation",
+      "• Assist in internal and external audit processes"
+    ];
+  }
+  
+  if (departmentLower.includes("hr") || designationLower.includes("human")) {
+    return [
+      "• Support recruitment, onboarding, and employee lifecycle management",
+      "• Maintain employee records and HR documentation",
+      "• Coordinate training and development programs",
+      "• Handle employee queries and support HR operations",
+      "• Assist in performance management processes",
+      "• Ensure compliance with labor laws and company policies"
+    ];
+  }
+  
+  // Default responsibilities
+  return [
+    "• Perform duties as assigned by the reporting manager",
+    "• Collaborate with team members to achieve departmental goals",
+    "• Maintain documentation and reports as required",
+    "• Participate in team meetings and planning sessions",
+    "• Support cross-functional initiatives as needed",
+    "• Continuously improve skills and knowledge relevant to the role"
+  ];
 }

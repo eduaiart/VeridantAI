@@ -31,7 +31,8 @@ import {
   Download,
   Briefcase,
   UserPlus,
-  Building2
+  Building2,
+  Loader2
 } from "lucide-react";
 import type { InternshipApplication, InternshipProgram, Employee } from "@shared/schema";
 

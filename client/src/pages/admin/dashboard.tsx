@@ -79,6 +79,10 @@ export default function AdminDashboard() {
     department: "",
     salary: "",
     joiningDate: "",
+    address: "",
+    city: "",
+    state: "",
+    pincode: "",
   });
   const { toast } = useToast();
 
@@ -291,6 +295,10 @@ export default function AdminDashboard() {
           joiningDate: data.joiningDate ? new Date(data.joiningDate).toISOString() : null,
           status: "onboarding",
           employmentType: "full_time",
+          address: data.address || null,
+          city: data.city || null,
+          state: data.state || null,
+          pincode: data.pincode || null,
         }),
       });
       if (!response.ok) {
@@ -311,6 +319,10 @@ export default function AdminDashboard() {
         department: "",
         salary: "",
         joiningDate: "",
+        address: "",
+        city: "",
+        state: "",
+        pincode: "",
       });
       toast({
         title: "Employee Created",
@@ -1353,7 +1365,7 @@ export default function AdminDashboard() {
 
       {/* New Employee Modal */}
       <Dialog open={showNewEmployeeModal} onOpenChange={setShowNewEmployeeModal}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add New Employee</DialogTitle>
             <DialogDescription>Enter employee details to create a new record</DialogDescription>
@@ -1397,6 +1409,44 @@ export default function AdminDashboard() {
                 onChange={(e) => setNewEmployeeForm({ ...newEmployeeForm, phone: e.target.value })}
                 placeholder="+91-XXXXXXXXXX"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="address">Address</Label>
+              <Input
+                id="address"
+                value={newEmployeeForm.address}
+                onChange={(e) => setNewEmployeeForm({ ...newEmployeeForm, address: e.target.value })}
+                placeholder="123 Main Street, Colony Name"
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="city">City</Label>
+                <Input
+                  id="city"
+                  value={newEmployeeForm.city}
+                  onChange={(e) => setNewEmployeeForm({ ...newEmployeeForm, city: e.target.value })}
+                  placeholder="Patna"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state">State</Label>
+                <Input
+                  id="state"
+                  value={newEmployeeForm.state}
+                  onChange={(e) => setNewEmployeeForm({ ...newEmployeeForm, state: e.target.value })}
+                  placeholder="Bihar"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="pincode">Pincode</Label>
+                <Input
+                  id="pincode"
+                  value={newEmployeeForm.pincode}
+                  onChange={(e) => setNewEmployeeForm({ ...newEmployeeForm, pincode: e.target.value })}
+                  placeholder="800001"
+                />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

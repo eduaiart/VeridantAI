@@ -1254,8 +1254,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { employeeId, probationSalary, confirmedSalary, probationPeriod, noticePeriod } = req.body;
       
-      console.log("Generating offer letter with:", { employeeId, probationSalary, confirmedSalary, probationPeriod, noticePeriod });
-      
       if (!employeeId) {
         return res.status(400).json({ error: "Employee ID is required" });
       }
@@ -1327,16 +1325,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Parse salary info if available
       let probationSalary, confirmedSalary;
-      console.log("Downloading offer letter, stored salary:", offerLetter.salary);
       if (offerLetter.salary && offerLetter.salary.includes('Probation:')) {
         const match = offerLetter.salary.match(/Probation: ₹([\d,]+)\/month, Confirmed: ₹([\d,]+)\/month/);
-        console.log("Salary regex match:", match);
         if (match) {
           probationSalary = match[1].replace(/,/g, '');
           confirmedSalary = match[2].replace(/,/g, '');
         }
       }
-      console.log("Parsed salaries for PDF:", { probationSalary, confirmedSalary });
 
       const pdfBuffer = await generateEmployeeOfferLetterPDF({
         offerNumber: offerLetter.offerNumber,

@@ -489,8 +489,7 @@ interface EmployeeOfferDetails {
   offerNumber: string;
   verificationToken: string;
   employee: Employee;
-  probationSalary?: string;
-  confirmedSalary?: string;
+  salary?: string;
   probationPeriod?: string;
   noticePeriod?: string;
   workingHours?: string;
@@ -524,14 +523,8 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
       
       const joiningDate = employee.joiningDate ? new Date(employee.joiningDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }) : "[Joining Date]";
       const currentDate = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
-      
-      // Format salary displays
-      const probationSalaryMonthly = details.probationSalary ? `₹${Number(details.probationSalary).toLocaleString()}` : "[To be discussed]";
-      const probationSalaryAnnual = details.probationSalary ? `₹${(Number(details.probationSalary) * 12).toLocaleString()}` : "[To be discussed]";
-      const confirmedSalaryMonthly = details.confirmedSalary ? `₹${Number(details.confirmedSalary).toLocaleString()}` : "[To be discussed]";
-      const confirmedSalaryAnnual = details.confirmedSalary ? `₹${(Number(details.confirmedSalary) * 12).toLocaleString()}` : "[To be discussed]";
-      
-      const probationPeriod = details.probationPeriod || "6 months";
+      const salaryDisplay = details.salary || (employee.salary ? `₹${Number(employee.salary).toLocaleString()}` : "[To be discussed]");
+      const probationPeriod = details.probationPeriod || "3 months";
       const noticePeriod = details.noticePeriod || "30 days";
       const workingHours = details.workingHours || "9:30 AM to 6:30 PM";
       const workingDays = details.workingDays || "Monday to Friday";
@@ -657,22 +650,8 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
          );
       doc.moveDown(0.5);
 
-      // Compensation table format
-      doc.text(`During Probation (${probationPeriod}):`, { indent: 20, lineGap: 2 });
-      doc.text(`   • ${probationSalaryMonthly} per month (${probationSalaryAnnual} per annum)`, { indent: 20, lineGap: 2 });
-      doc.moveDown(0.3);
-      doc.text(`After Confirmation:`, { indent: 20, lineGap: 2 });
-      doc.text(`   • ${confirmedSalaryMonthly} per month (${confirmedSalaryAnnual} per annum)`, { indent: 20, lineGap: 2 });
-      doc.moveDown(0.5);
-
-      doc.fontSize(9)
-         .fillColor("#64748B")
-         .text("Note: Salary revision after probation is subject to satisfactory performance evaluation.", { indent: 20, lineGap: 2 });
-      doc.moveDown(0.5);
-
-      doc.fontSize(10)
-         .fillColor("#374151");
       const compensationDetails = [
+        `• Monthly Salary: ${salaryDisplay} (Cost to Company)`,
         "• Salary will be credited to your designated bank account on the last working day of each month",
         "• Provident Fund contribution as per statutory requirements (12% employer + 12% employee)",
         "• Professional Tax deductions as applicable",

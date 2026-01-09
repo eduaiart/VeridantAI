@@ -1252,7 +1252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate employee offer letter
   app.post("/api/employee-offer-letters", authMiddleware, adminMiddleware, async (req, res) => {
     try {
-      const { employeeId, probationSalary, confirmedSalary, probationPeriod, noticePeriod } = req.body;
+      const { employeeId, salary, probationPeriod, noticePeriod } = req.body;
       
       if (!employeeId) {
         return res.status(400).json({ error: "Employee ID is required" });
@@ -1263,19 +1263,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Employee not found" });
       }
 
-      // Create offer letter record with compensation info
-      const salaryInfo = probationSalary && confirmedSalary 
-        ? `Probation: ₹${Number(probationSalary).toLocaleString()}/month, Confirmed: ₹${Number(confirmedSalary).toLocaleString()}/month`
-        : employee.salary || null;
-
+      // Create offer letter record
       const offerLetter = await storage.createEmployeeOfferLetter({
         employeeId,
         recipientName: `${employee.firstName} ${employee.lastName}`,
         position: employee.designation,
         department: employee.department,
-        salary: salaryInfo,
+        salary: salary || employee.salary || null,
         joiningDate: employee.joiningDate,
-        probationPeriod: probationPeriod || "6 months",
+        probationPeriod: probationPeriod || "3 months",
         noticePeriod: noticePeriod || "30 days",
         issuedBy: req.user!.userId,
       });
@@ -1286,9 +1282,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         offerNumber: offerLetter.offerNumber,
         verificationToken: offerLetter.verificationToken,
         employee,
-        probationSalary,
-        confirmedSalary,
-        probationPeriod: probationPeriod || "6 months",
+        salary: salary || (employee.salary ? `₹${Number(employee.salary).toLocaleString()}` : undefined),
+        probationPeriod: probationPeriod || "3 months",
         noticePeriod: noticePeriod || "30 days",
       }, baseUrl);
 
@@ -1322,24 +1317,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const baseUrl = `${req.protocol}://${req.get('host')}`;
-      
-      // Parse salary info if available
-      let probationSalary, confirmedSalary;
-      if (offerLetter.salary && offerLetter.salary.includes('Probation:')) {
-        const match = offerLetter.salary.match(/Probation: ₹([\d,]+)\/month, Confirmed: ₹([\d,]+)\/month/);
-        if (match) {
-          probationSalary = match[1].replace(/,/g, '');
-          confirmedSalary = match[2].replace(/,/g, '');
-        }
-      }
-
       const pdfBuffer = await generateEmployeeOfferLetterPDF({
         offerNumber: offerLetter.offerNumber,
         verificationToken: offerLetter.verificationToken,
         employee,
-        probationSalary,
-        confirmedSalary,
-        probationPeriod: offerLetter.probationPeriod || "6 months",
+        salary: offerLetter.salary || undefined,
+        probationPeriod: offerLetter.probationPeriod || "3 months",
         noticePeriod: offerLetter.noticePeriod || "30 days",
       }, baseUrl);
 

@@ -968,8 +968,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Creating employee with data:", JSON.stringify(req.body, null, 2));
       
+      // Transform date strings to Date objects before validation
+      const bodyWithDates = {
+        ...req.body,
+        joiningDate: req.body.joiningDate ? new Date(req.body.joiningDate) : undefined,
+        dateOfBirth: req.body.dateOfBirth ? new Date(req.body.dateOfBirth) : undefined,
+        probationEndDate: req.body.probationEndDate ? new Date(req.body.probationEndDate) : undefined,
+        confirmationDate: req.body.confirmationDate ? new Date(req.body.confirmationDate) : undefined,
+        lastWorkingDate: req.body.lastWorkingDate ? new Date(req.body.lastWorkingDate) : undefined,
+      };
+      
       // Parse and validate
-      const data = insertEmployeeSchema.parse(req.body);
+      const data = insertEmployeeSchema.parse(bodyWithDates);
       console.log("Parsed data:", JSON.stringify(data, null, 2));
       
       const employee = await storage.createEmployee({

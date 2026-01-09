@@ -13,7 +13,8 @@ const COMPANY_CIN = "U62099BR2025PTC079060";
 
 // Get logo path
 const LOGO_PATH = path.join(process.cwd(), "attached_assets", "2nd_logo_highres_1767216390338.png");
-const SIGNATURE_PATH = path.join(process.cwd(), "attached_assets", "image_1767954911326.png");
+const SIGNATURE_PATH = path.join(process.cwd(), "attached_assets", "image_1767422192168.png"); // Internship offer letters
+const EMPLOYEE_SIGNATURE_PATH = path.join(process.cwd(), "attached_assets", "image_1767954911326.png"); // Employee offer letters
 
 export async function generateCertificatePDF(certificate: Certificate, baseUrl: string): Promise<Buffer> {
   return new Promise(async (resolve, reject) => {
@@ -912,17 +913,16 @@ export async function generateEmployeeOfferLetterPDF(details: EmployeeOfferDetai
       doc.text("Yours sincerely,");
       doc.moveDown(0.5);
       
-      // Add signature image
-      if (fs.existsSync(SIGNATURE_PATH)) {
-        doc.image(SIGNATURE_PATH, 50, doc.y, { width: 100 });
-        doc.y += 50;
+      // Add signature image (Employee offer letter uses new signature)
+      if (fs.existsSync(EMPLOYEE_SIGNATURE_PATH)) {
+        doc.image(EMPLOYEE_SIGNATURE_PATH, 50, doc.y, { width: 120 });
+        doc.y += 55;
       } else {
         doc.moveDown(1.5);
       }
       
-      doc.text("_____________________________");
-      doc.text("Authorized Signatory");
-      doc.text("Human Resources Department");
+      doc.text("Shri. Pradeep Kumar Nagvanshi");
+      doc.text("Director");
       doc.text(COMPANY_NAME);
       doc.text(`Email: ${COMPANY_EMAIL} | Phone: ${COMPANY_PHONE}`);
 

@@ -321,7 +321,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getApplicationCount(): Promise<number> {
-    const result = await db.select({ count: sql<number>`count(*)` }).from(internshipApplications);
+    const result = await db.select({ count: sql<number>`count(*)::int` }).from(internshipApplications);
     return Number(result[0].count);
   }
 
@@ -386,7 +386,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUnreadCount(userId: string): Promise<number> {
-    const result = await db.select({ count: sql<number>`count(*)` }).from(messages)
+    const result = await db.select({ count: sql<number>`count(*)::int` }).from(messages)
       .where(and(eq(messages.recipientId, userId), eq(messages.isRead, false)));
     return Number(result[0].count);
   }
@@ -455,14 +455,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCertificateCount(): Promise<number> {
-    const result = await db.select({ count: sql<number>`count(*)` }).from(certificates);
+    const result = await db.select({ count: sql<number>`count(*)::int` }).from(certificates);
     return Number(result[0].count);
   }
 
   // ============== OFFER LETTERS ==============
 
   async createOfferLetter(offerLetter: InsertOfferLetter): Promise<OfferLetter> {
-    const count = await db.select({ count: sql<number>`count(*)` }).from(offerLetters);
+    const count = await db.select({ count: sql<number>`count(*)::int` }).from(offerLetters);
     const offerNumber = generateOfferNumber(Number(count[0].count));
     const verificationToken = generateVerificationToken();
     
@@ -660,8 +660,8 @@ export class DatabaseStorage implements IStorage {
 
   // Employee Offer Letters
   async getEmployeeOfferLetterCount(): Promise<number> {
-    const result = await db.select({ count: sql<number>`count(*)` }).from(employeeOfferLetters);
-    return result[0]?.count || 0;
+    const result = await db.select({ count: sql<number>`count(*)::int` }).from(employeeOfferLetters);
+    return Number(result[0]?.count) || 0;
   }
 
   async createEmployeeOfferLetter(data: Omit<InsertEmployeeOfferLetter, "offerNumber" | "verificationToken">): Promise<EmployeeOfferLetter> {

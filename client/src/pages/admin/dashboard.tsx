@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { 
@@ -61,6 +64,21 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [showEmployeeModal, setShowEmployeeModal] = useState(false);
+  const [showNewEmployeeModal, setShowNewEmployeeModal] = useState(false);
+  const [showConvertModal, setShowConvertModal] = useState(false);
+  const [convertingApplication, setConvertingApplication] = useState<any>(null);
+  const [newEmployeeForm, setNewEmployeeForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    designation: "",
+    department: "",
+    salary: "",
+    joiningDate: "",
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -243,6 +261,124 @@ export default function AdminDashboard() {
         window.URL.revokeObjectURL(url);
         a.remove();
       }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createEmployeeMutation = useMutation({
+    mutationFn: async (data: typeof newEmployeeForm) => {
+      const response = await fetch("/api/employees", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify({
+          ...data,
+          salary: data.salary ? parseFloat(data.salary) : null,
+          status: "onboarding",
+        }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create employee");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
+      setShowNewEmployeeModal(false);
+      setNewEmployeeForm({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        designation: "",
+        department: "",
+        salary: "",
+        joiningDate: "",
+      });
+      toast({
+        title: "Employee Created",
+        description: "New employee has been added successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateEmployeeStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const response = await fetch(`/api/employees/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) throw new Error("Failed to update employee status");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
+      setShowEmployeeModal(false);
+      toast({
+        title: "Status Updated",
+        description: "Employee status has been updated.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update employee status",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const convertInternMutation = useMutation({
+    mutationFn: async ({ applicationId, designation, department, salary, joiningDate }: {
+      applicationId: string;
+      designation: string;
+      department: string;
+      salary?: number;
+      joiningDate: string;
+    }) => {
+      const response = await fetch("/api/employees/convert-intern", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ applicationId, designation, department, salary, joiningDate }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to convert intern");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/applications"] });
+      setShowConvertModal(false);
+      setConvertingApplication(null);
+      toast({
+        title: "Intern Converted",
+        description: "Intern has been successfully converted to employee.",
+      });
     },
     onError: (error: Error) => {
       toast({
@@ -989,7 +1125,10 @@ export default function AdminDashboard() {
                                 </Badge>
                               </td>
                               <td className="py-3 px-4">
-                                <Button variant="ghost" size="sm">
+                                <Button variant="ghost" size="sm" onClick={() => {
+                                  setSelectedEmployee(employee);
+                                  setShowEmployeeModal(true);
+                                }}>
                                   <Eye className="w-4 h-4 mr-1" />
                                   View
                                 </Button>
@@ -1022,7 +1161,10 @@ export default function AdminDashboard() {
                             <p className="font-medium">{app.firstName} {app.lastName}</p>
                             <p className="text-sm text-muted-foreground">{app.email} • {app.applicationNumber}</p>
                           </div>
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" onClick={() => {
+                            setConvertingApplication(app);
+                            setShowConvertModal(true);
+                          }}>
                             <UserPlus className="w-4 h-4 mr-2" />
                             Convert to Employee
                           </Button>
@@ -1032,10 +1174,320 @@ export default function AdminDashboard() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Add New Employee Button */}
+              <div className="flex justify-end">
+                <Button onClick={() => setShowNewEmployeeModal(true)}>
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Add New Employee
+                </Button>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Employee Details Modal */}
+      <Dialog open={showEmployeeModal} onOpenChange={setShowEmployeeModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Employee Details</DialogTitle>
+            <DialogDescription>View and manage employee information</DialogDescription>
+          </DialogHeader>
+          {selectedEmployee && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground">Employee ID</Label>
+                  <p className="font-mono">{selectedEmployee.employeeId}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Status</Label>
+                  <div className="mt-1">
+                    <Select
+                      value={selectedEmployee.status || "onboarding"}
+                      onValueChange={(value) => {
+                        updateEmployeeStatusMutation.mutate({ id: selectedEmployee.id, status: value });
+                      }}
+                    >
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="onboarding">Onboarding</SelectItem>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="on_leave">On Leave</SelectItem>
+                        <SelectItem value="resigned">Resigned</SelectItem>
+                        <SelectItem value="terminated">Terminated</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Full Name</Label>
+                  <p className="font-medium">{selectedEmployee.firstName} {selectedEmployee.lastName}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Email</Label>
+                  <p>{selectedEmployee.email}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Phone</Label>
+                  <p>{selectedEmployee.phone || "-"}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Designation</Label>
+                  <p>{selectedEmployee.designation}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Department</Label>
+                  <p>{selectedEmployee.department}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Joining Date</Label>
+                  <p>{selectedEmployee.joiningDate ? new Date(selectedEmployee.joiningDate).toLocaleDateString() : "-"}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Salary</Label>
+                  <p>{selectedEmployee.salary ? `₹${Number(selectedEmployee.salary).toLocaleString()}` : "-"}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Employment Type</Label>
+                  <p className="capitalize">{selectedEmployee.employmentType?.replace("_", " ") || "Full Time"}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Employee Modal */}
+      <Dialog open={showNewEmployeeModal} onOpenChange={setShowNewEmployeeModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add New Employee</DialogTitle>
+            <DialogDescription>Enter employee details to create a new record</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  value={newEmployeeForm.firstName}
+                  onChange={(e) => setNewEmployeeForm({ ...newEmployeeForm, firstName: e.target.value })}
+                  placeholder="John"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  value={newEmployeeForm.lastName}
+                  onChange={(e) => setNewEmployeeForm({ ...newEmployeeForm, lastName: e.target.value })}
+                  placeholder="Doe"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={newEmployeeForm.email}
+                onChange={(e) => setNewEmployeeForm({ ...newEmployeeForm, email: e.target.value })}
+                placeholder="john.doe@veridantai.in"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                value={newEmployeeForm.phone}
+                onChange={(e) => setNewEmployeeForm({ ...newEmployeeForm, phone: e.target.value })}
+                placeholder="+91-XXXXXXXXXX"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="designation">Designation</Label>
+                <Input
+                  id="designation"
+                  value={newEmployeeForm.designation}
+                  onChange={(e) => setNewEmployeeForm({ ...newEmployeeForm, designation: e.target.value })}
+                  placeholder="Software Engineer"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="department">Department</Label>
+                <Select
+                  value={newEmployeeForm.department}
+                  onValueChange={(value) => setNewEmployeeForm({ ...newEmployeeForm, department: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Engineering">Engineering</SelectItem>
+                    <SelectItem value="Finance">Finance</SelectItem>
+                    <SelectItem value="Marketing">Marketing</SelectItem>
+                    <SelectItem value="Operations">Operations</SelectItem>
+                    <SelectItem value="HR">HR</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="salary">Salary (₹)</Label>
+                <Input
+                  id="salary"
+                  type="number"
+                  value={newEmployeeForm.salary}
+                  onChange={(e) => setNewEmployeeForm({ ...newEmployeeForm, salary: e.target.value })}
+                  placeholder="50000"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="joiningDate">Joining Date</Label>
+                <Input
+                  id="joiningDate"
+                  type="date"
+                  value={newEmployeeForm.joiningDate}
+                  onChange={(e) => setNewEmployeeForm({ ...newEmployeeForm, joiningDate: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewEmployeeModal(false)}>Cancel</Button>
+            <Button
+              onClick={() => createEmployeeMutation.mutate(newEmployeeForm)}
+              disabled={createEmployeeMutation.isPending || !newEmployeeForm.firstName || !newEmployeeForm.lastName || !newEmployeeForm.email || !newEmployeeForm.designation || !newEmployeeForm.department}
+            >
+              {createEmployeeMutation.isPending ? "Creating..." : "Create Employee"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Convert Intern Modal */}
+      <Dialog open={showConvertModal} onOpenChange={setShowConvertModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Convert Intern to Employee</DialogTitle>
+            <DialogDescription>
+              {convertingApplication && `Converting ${convertingApplication.firstName} ${convertingApplication.lastName} to an employee`}
+            </DialogDescription>
+          </DialogHeader>
+          {convertingApplication && (
+            <ConvertInternForm
+              application={convertingApplication}
+              onSubmit={(data) => convertInternMutation.mutate(data)}
+              isPending={convertInternMutation.isPending}
+              onCancel={() => setShowConvertModal(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function ConvertInternForm({ 
+  application, 
+  onSubmit, 
+  isPending, 
+  onCancel 
+}: { 
+  application: any; 
+  onSubmit: (data: any) => void; 
+  isPending: boolean; 
+  onCancel: () => void; 
+}) {
+  const [formData, setFormData] = useState({
+    designation: "",
+    department: "",
+    salary: "",
+    joiningDate: new Date().toISOString().split('T')[0],
+  });
+
+  return (
+    <div className="space-y-4">
+      <div className="p-4 bg-muted rounded-lg">
+        <p className="text-sm text-muted-foreground">Intern Details</p>
+        <p className="font-medium">{application.firstName} {application.lastName}</p>
+        <p className="text-sm">{application.email}</p>
+        <p className="text-sm text-muted-foreground">Application: {application.applicationNumber}</p>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="conv-designation">Designation</Label>
+        <Input
+          id="conv-designation"
+          value={formData.designation}
+          onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
+          placeholder="Junior Software Engineer"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="conv-department">Department</Label>
+        <Select
+          value={formData.department}
+          onValueChange={(value) => setFormData({ ...formData, department: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select department" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Engineering">Engineering</SelectItem>
+            <SelectItem value="Finance">Finance</SelectItem>
+            <SelectItem value="Marketing">Marketing</SelectItem>
+            <SelectItem value="Operations">Operations</SelectItem>
+            <SelectItem value="HR">HR</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="conv-salary">Salary (₹)</Label>
+          <Input
+            id="conv-salary"
+            type="number"
+            value={formData.salary}
+            onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
+            placeholder="50000"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="conv-joiningDate">Joining Date</Label>
+          <Input
+            id="conv-joiningDate"
+            type="date"
+            value={formData.joiningDate}
+            onChange={(e) => setFormData({ ...formData, joiningDate: e.target.value })}
+          />
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={onCancel}>Cancel</Button>
+        <Button
+          onClick={() => onSubmit({
+            applicationId: application.id,
+            designation: formData.designation,
+            department: formData.department,
+            salary: formData.salary ? parseFloat(formData.salary) : undefined,
+            joiningDate: formData.joiningDate,
+          })}
+          disabled={isPending || !formData.designation || !formData.department || !formData.joiningDate}
+        >
+          {isPending ? "Converting..." : "Convert to Employee"}
+        </Button>
+      </DialogFooter>
     </div>
   );
 }

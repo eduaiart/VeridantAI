@@ -10,6 +10,7 @@ import VerifyPage from "@/pages/verify";
 import AdminDashboard from "@/pages/admin/dashboard";
 import LoginPage from "@/pages/auth/login";
 import RegisterPage from "@/pages/auth/register";
+import RequireHirePage from "@/pages/solutions/requirehire";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/internships" component={InternshipsPage} />
       <Route path="/verify" component={VerifyPage} />
       <Route path="/verify/:token" component={VerifyPage} />
+      <Route path="/solutions/requirehire" component={RequireHirePage} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/dashboard" component={AdminDashboard} />
       <Route path="/login" component={LoginPage} />

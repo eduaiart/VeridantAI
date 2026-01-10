@@ -42,6 +42,38 @@ export default function Header() {
             </button>
             <div className="relative group">
               <button className="text-muted-foreground hover:text-foreground transition-colors font-medium flex items-center">
+                Products
+                <svg
+                  className="w-4 h-4 ml-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              {/* Products Dropdown Menu */}
+              <div className="absolute top-full left-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="py-2">
+                  <a
+                    href="/solutions/requirehire"
+                    className="block w-full text-left px-4 py-3 text-sm hover:bg-muted/50 transition-colors"
+                    data-testid="link-product-requirehire"
+                  >
+                    <div className="font-medium text-foreground">RequireHire</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">AI-powered interview platform</div>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div className="relative group">
+              <button className="text-muted-foreground hover:text-foreground transition-colors font-medium flex items-center">
                 {t("navigation.resources")}
                 <svg
                   className="w-4 h-4 ml-1"
@@ -166,6 +198,18 @@ export default function Header() {
               >
                 {t("navigation.solutions")}
               </button>
+              <div className="text-left">
+                <div className="text-muted-foreground font-medium mb-2">Products</div>
+                <div className="pl-4 space-y-2">
+                  <a
+                    href="/solutions/requirehire"
+                    className="block w-full text-left text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    data-testid="link-mobile-requirehire"
+                  >
+                    RequireHire - AI Interview Platform
+                  </a>
+                </div>
+              </div>
               <div className="text-left">
                 <div className="text-muted-foreground font-medium mb-2">
                   {t("navigation.resources")}

@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/hooks/use-language";
 import Home from "@/pages/home";
 import InternshipsPage from "@/pages/internships";
+import InternshipDetailPage from "@/pages/internship-detail";
 import VerifyPage from "@/pages/verify";
 import AdminDashboard from "@/pages/admin/dashboard";
 import LoginPage from "@/pages/auth/login";
@@ -18,6 +19,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/internships" component={InternshipsPage} />
+      <Route path="/internships/:id" component={InternshipDetailPage} />
       <Route path="/verify" component={VerifyPage} />
       <Route path="/verify/:token" component={VerifyPage} />
       <Route path="/solutions/requirehire" component={RequireHirePage} />

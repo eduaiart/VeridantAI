@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
 import Header from "@/components/header";
@@ -62,6 +62,14 @@ export default function InternshipDetailPage() {
   const { toast } = useToast();
   const [showApplication, setShowApplication] = useState(false);
   const [applicationNumber, setApplicationNumber] = useState("");
+  const applicationFormRef = useRef<HTMLDivElement>(null);
+
+  const handleApplyClick = () => {
+    setShowApplication(true);
+    setTimeout(() => {
+      applicationFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
 
   const programId = params?.id;
 
@@ -482,7 +490,7 @@ export default function InternshipDetailPage() {
                     <Button 
                       className="w-full hero-gradient text-white" 
                       size="lg"
-                      onClick={() => setShowApplication(true)}
+                      onClick={handleApplyClick}
                       disabled={!program.isActive}
                     >
                       {program.isActive ? "Apply for This Position" : "Applications Closed"}
@@ -500,7 +508,7 @@ export default function InternshipDetailPage() {
 
         {/* Application Form Modal/Section */}
         {showApplication && (
-          <section className="py-12 bg-muted/50" id="application-form">
+          <section className="py-12 bg-muted/50" id="application-form" ref={applicationFormRef}>
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
               <Card className="max-w-3xl mx-auto">
                 <CardHeader>
@@ -890,7 +898,7 @@ export default function InternshipDetailPage() {
                           </div>
 
                           <div className="space-y-2">
-                            <Label>PAN Card (Optional)</Label>
+                            <Label>PAN Card</Label>
                             <Input
                               type="file"
                               accept=".pdf,.jpg,.jpeg,.png,image/*"

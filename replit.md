@@ -8,6 +8,13 @@ The project implements a clean, professional design with smooth scrolling naviga
 
 ## Recent Changes (January 2026)
 
+- **College MoU System**: New Memorandum of Understanding generation system for RequireHire platform partnerships:
+  - Admin dashboard tab for managing college MoUs
+  - Professional 3-page PDF generation with 14 legal sections (Purpose, Benefits, IP Rights, Data Privacy, Confidentiality, etc.)
+  - Unique reference numbers (MOU-RH-YYYY-####)
+  - QR code verification with dedicated verification page tab
+  - TPO/Contact person tracking
+  - 3-year validity period with 60-day termination notice
 - **Email Notifications**: Integrated Resend for automated email notifications:
   - Application confirmation emails sent to candidates
   - Status change notifications (shortlisted, selected, rejected)

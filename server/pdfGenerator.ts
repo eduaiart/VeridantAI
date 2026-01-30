@@ -1163,10 +1163,15 @@ export async function generateMouPDF(
 ): Promise<Buffer> {
    return new Promise(async (resolve, reject) => {
       try {
+         const leftMargin = 40;
+         const topMargin = 55;
+         const bottomMargin = 40;
+         
          const doc = new PDFDocument({
             size: "A4",
-            margins: { top: 60, bottom: 60, left: 50, right: 50 },
+            margins: { top: topMargin, bottom: bottomMargin, left: leftMargin, right: 40 },
             bufferPages: true,
+            autoFirstPage: false,
          });
 
          const chunks: Buffer[] = [];
@@ -1175,10 +1180,12 @@ export async function generateMouPDF(
          doc.on("error", reject);
 
          const verificationUrl = `${baseUrl}/verify/${mou.verificationToken}`;
-         const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { width: 80 });
+         const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { width: 70 });
 
-         const pageWidth = doc.page.width;
-         const contentWidth = pageWidth - 100;
+         const pageWidth = 595.28; // A4 width in points
+         const pageHeight = 841.89; // A4 height in points
+         const usableWidth = pageWidth - leftMargin - 40;
+         const contentWidth = usableWidth;
          
          const formatDate = (date: Date | null) => {
             if (!date) return "________________";
@@ -1189,475 +1196,167 @@ export async function generateMouPDF(
             });
          };
 
-         // Helper function to add header on each page
-         const addHeader = () => {
-            const currentY = doc.y;
-            doc.save();
-            
-            // Logo
+         // Helper function to add header on a page
+         const addHeaderToPage = (page: any) => {
             if (fs.existsSync(LOGO_PATH)) {
-               doc.image(LOGO_PATH, 50, 20, { width: 45 });
+               doc.image(LOGO_PATH, leftMargin, 12, { width: 35 });
             }
-            
-            // Company name
-            doc.fontSize(12)
-               .fillColor("#64748B")
-               .text("Veridant", 100, 28, { continued: true })
-               .fillColor("#0EA5E9")
-               .text("AI");
-            
-            doc.fontSize(8)
-               .fillColor("#64748B")
-               .text("AI-Powered Recruitment Solutions", 100, 42);
-            
-            // MoU number on right
-            doc.fontSize(9)
-               .fillColor("#64748B")
-               .text(`Ref: ${mou.mouNumber}`, pageWidth - 150, 28, { width: 100, align: "right" });
-            
-            doc.restore();
-            doc.y = currentY;
+            doc.fontSize(10).fillColor("#64748B").text("Veridant", leftMargin + 40, 18, { continued: true, lineBreak: false }).fillColor("#0EA5E9").text("AI", { lineBreak: false });
+            doc.fontSize(6).fillColor("#64748B").text("AI-Powered Recruitment Solutions", leftMargin + 40, 30, { lineBreak: false });
+            doc.fontSize(7).fillColor("#64748B").text(`Ref: ${mou.mouNumber}`, pageWidth - 120, 18, { width: 80, align: "right", lineBreak: false });
          };
 
-         // Helper function to add footer on each page
-         const addFooter = (pageNum: number, totalPages: number) => {
-            const footerY = doc.page.height - 45;
-            doc.save();
-            
-            doc.fontSize(8)
-               .fillColor("#64748B")
-               .text(
-                  `${COMPANY_NAME} | ${COMPANY_WEBSITE} | ${COMPANY_EMAIL}`,
-                  50,
-                  footerY,
-                  { align: "center", width: contentWidth }
-               );
-            
-            doc.text(
-               `Page ${pageNum} of ${totalPages}`,
-               50,
-               footerY + 12,
-               { align: "center", width: contentWidth }
-            );
-            
-            doc.restore();
+         // Helper function to add footer on a page
+         const addFooterToPage = (pageNum: number, totalPages: number) => {
+            const footerY = pageHeight - 28;
+            doc.fontSize(6).fillColor("#64748B").text(`${COMPANY_NAME} | ${COMPANY_WEBSITE} | ${COMPANY_EMAIL}`, leftMargin, footerY, { align: "center", width: usableWidth });
+            doc.text(`Page ${pageNum} of ${totalPages}`, leftMargin, footerY + 8, { align: "center", width: usableWidth });
          };
 
-         // ========== PAGE 1 ==========
-         addHeader();
-         
-         doc.y = 70;
+         // Add first page
+         doc.addPage();
+         doc.x = leftMargin;
+         doc.y = topMargin;
          
          // Title
-         doc.fontSize(18)
-            .fillColor("#1e293b")
-            .text("MEMORANDUM OF UNDERSTANDING", { align: "center" });
-         
+         doc.fontSize(12).fillColor("#1e293b").text("MEMORANDUM OF UNDERSTANDING", { width: usableWidth, align: "center" });
+         doc.fontSize(8).fillColor("#64748B").text("Student Career Support & Placement Assistance Partnership", { width: usableWidth, align: "center" });
          doc.moveDown(0.3);
-         doc.fontSize(12)
-            .fillColor("#64748B")
-            .text("Student Career Support & Placement Assistance Partnership", { align: "center" });
          
-         doc.moveDown(1.5);
-         
-         // Date line
-         doc.fontSize(11)
-            .fillColor("#1e293b")
-            .text(`This MoU is entered on ${formatDate(mou.signedDate)} between:`, { align: "left" });
-         
-         doc.moveDown(1);
-         
-         // First Party
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#0EA5E9")
-            .text("FIRST PARTY:", { continued: true })
-            .font("Helvetica")
-            .fillColor("#1e293b")
-            .text(` Veridant AI Private Limited ("RequireHire"), CIN: ${COMPANY_CIN}, Patna, Bihar`);
-         
-         doc.moveDown(0.8);
-         
-         // Second Party
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#0EA5E9")
-            .text("SECOND PARTY:", { continued: true })
-            .font("Helvetica")
-            .fillColor("#1e293b")
-            .text(` ${mou.collegeName} ("Institution")`);
-         
-         doc.moveDown(0.3);
-         doc.fontSize(10)
-            .fillColor("#64748B")
-            .text(`Address: ${mou.collegeAddress}${mou.collegeCity ? `, ${mou.collegeCity}` : ""}${mou.collegeState ? `, ${mou.collegeState}` : ""}${mou.collegePincode ? ` - ${mou.collegePincode}` : ""}`);
-         
-         doc.moveDown(1.5);
+         // Date and Parties
+         doc.fontSize(7).fillColor("#1e293b").text(`This MoU is entered on ${formatDate(mou.signedDate)} between:`, { width: usableWidth });
+         doc.moveDown(0.15);
+         doc.fontSize(7).font("Helvetica-Bold").fillColor("#0EA5E9").text("FIRST PARTY: ", { continued: true }).font("Helvetica").fillColor("#1e293b").text(`Veridant AI Private Limited ("RequireHire"), CIN: ${COMPANY_CIN}, Patna, Bihar`);
+         doc.fontSize(7).font("Helvetica-Bold").fillColor("#0EA5E9").text("SECOND PARTY: ", { continued: true }).font("Helvetica").fillColor("#1e293b").text(`${mou.collegeName} ("Institution")`);
+         doc.fontSize(6).fillColor("#64748B").text(`Address: ${mou.collegeAddress}${mou.collegeCity ? `, ${mou.collegeCity}` : ""}${mou.collegeState ? `, ${mou.collegeState}` : ""}${mou.collegePincode ? ` - ${mou.collegePincode}` : ""}`, { width: usableWidth });
+         doc.moveDown(0.25);
          
          // Section 1: PURPOSE
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("1. PURPOSE");
-         doc.moveDown(0.3);
-         doc.fontSize(10)
-            .font("Helvetica")
-            .fillColor("#374151")
-            .text("RequireHire is India's Interview-First Recruitment Platform that helps students get interviewed directly by companies. This MoU establishes a partnership to provide career support tools and placement assistance to the Institution's students.", {
-               align: "justify",
-               lineGap: 2,
-            });
-         
-         doc.moveDown(1);
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#1e293b").text("1. PURPOSE", { width: usableWidth });
+         doc.fontSize(7).font("Helvetica").fillColor("#374151").text("RequireHire is India's Interview-First Recruitment Platform. This MoU establishes a partnership to provide career support tools and placement assistance to the Institution's students.", { width: usableWidth, align: "justify" });
+         doc.moveDown(0.15);
          
          // Section 2: BENEFITS FOR STUDENTS
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("2. BENEFITS FOR STUDENTS");
-         doc.moveDown(0.3);
-         
-         const studentBenefits = [
-            "(a) AI-Powered Mock Interviews - Practice with AI interviewer, get instant feedback",
-            "(b) AI Resume Builder - Create professional resumes with AI assistance",
-            "(c) AI Resume Checker - Get instant feedback and improve resume score",
-            "(d) AI Cover Letter Generator - Create personalized cover letters for each job",
-            "(e) AI Interview Preparation - Practice questions tailored for Indian job market",
-            "(f) AI Skill Scores & Verified Profile Badge - Stand out to employers",
-            "(g) Actual Company Interviews - If shortlisted in AI interview (first round), companies will connect directly and proceed with next rounds of interview",
-         ];
-         
-         studentBenefits.forEach((benefit) => {
-            doc.fontSize(10)
-               .font("Helvetica")
-               .fillColor("#374151")
-               .text(benefit, { indent: 20, lineGap: 1 });
-         });
-         
-         doc.moveDown(1);
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#1e293b").text("2. BENEFITS FOR STUDENTS", { width: usableWidth });
+         doc.fontSize(7).font("Helvetica").fillColor("#374151").text("(a) AI Mock Interviews (b) AI Resume Builder (c) AI Resume Checker (d) AI Cover Letter Generator (e) AI Interview Prep (f) Skill Scores & Verified Badge (g) Direct Company Interviews if shortlisted", { width: usableWidth });
+         doc.moveDown(0.15);
          
          // Section 3: BENEFITS FOR INSTITUTION
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("3. BENEFITS FOR INSTITUTION");
-         doc.moveDown(0.3);
-         
-         const institutionBenefits = [
-            "(a) Enhanced placement support for students",
-            "(b) AI-powered pre-screening before placement drives",
-            "(c) Interview-ready students with verified skill scores",
-            "(d) Access to RequireHire's employer network for campus placements",
-         ];
-         
-         institutionBenefits.forEach((benefit) => {
-            doc.fontSize(10)
-               .font("Helvetica")
-               .fillColor("#374151")
-               .text(benefit, { indent: 20, lineGap: 1 });
-         });
-         
-         doc.moveDown(1);
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#1e293b").text("3. BENEFITS FOR INSTITUTION", { width: usableWidth });
+         doc.fontSize(7).font("Helvetica").fillColor("#374151").text("(a) Enhanced placement support (b) AI pre-screening before drives (c) Interview-ready students (d) Access to RequireHire's employer network", { width: usableWidth });
+         doc.moveDown(0.15);
          
          // Section 4: TERM
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("4. TERM");
-         doc.moveDown(0.3);
-         doc.fontSize(10)
-            .font("Helvetica")
-            .fillColor("#374151")
-            .text("This MoU is valid for 3 years from the date of signing. Either party may terminate with 60 days written notice. RequireHire may terminate immediately for material breach.", {
-               align: "justify",
-               lineGap: 2,
-            });
-         
-         doc.moveDown(1);
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#1e293b").text("4. TERM", { width: usableWidth });
+         doc.fontSize(7).font("Helvetica").fillColor("#374151").text("Valid for 3 years. Either party may terminate with 60 days notice. RequireHire may terminate immediately for material breach.", { width: usableWidth });
+         doc.moveDown(0.15);
          
          // Section 5: INSTITUTION RESPONSIBILITIES
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("5. INSTITUTION RESPONSIBILITIES");
-         doc.moveDown(0.3);
-         
-         const institutionResponsibilities = [
-            "(a) Designate a TPO/SPOC for coordination",
-            "(b) Promote the platform among eligible students",
-            "(c) Provide venue/infrastructure for workshops (if conducted)",
-            "(d) NOT share platform access with other institutions or third parties",
-            "(e) NOT reverse engineer, copy, or replicate any part of the platform",
-         ];
-         
-         institutionResponsibilities.forEach((resp) => {
-            doc.fontSize(10)
-               .font("Helvetica")
-               .fillColor("#374151")
-               .text(resp, { indent: 20, lineGap: 1 });
-         });
-         
-         // ========== PAGE 2 ==========
-         doc.addPage();
-         addHeader();
-         doc.y = 70;
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#1e293b").text("5. INSTITUTION RESPONSIBILITIES", { width: usableWidth });
+         doc.fontSize(7).font("Helvetica").fillColor("#374151").text("(a) Designate TPO/SPOC (b) Promote platform (c) Provide workshop venue (d) NOT share access with others (e) NOT reverse engineer platform", { width: usableWidth });
+         doc.moveDown(0.15);
          
          // Section 6: INTELLECTUAL PROPERTY
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("6. INTELLECTUAL PROPERTY");
-         doc.moveDown(0.3);
-         doc.fontSize(10)
-            .font("Helvetica")
-            .fillColor("#374151")
-            .text("All IP rights (software, algorithms, AI models, databases, trademarks) remain the exclusive property of RequireHire. This MoU grants NO ownership or license to the Institution. Any feedback provided becomes RequireHire's property.", {
-               align: "justify",
-               lineGap: 2,
-            });
-         
-         doc.moveDown(1);
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#1e293b").text("6. INTELLECTUAL PROPERTY", { width: usableWidth });
+         doc.fontSize(7).font("Helvetica").fillColor("#374151").text("All IP rights remain with RequireHire. This MoU grants NO ownership or license to Institution.", { width: usableWidth });
+         doc.moveDown(0.15);
          
          // Section 7: DATA & PRIVACY
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("7. DATA & PRIVACY");
-         doc.moveDown(0.3);
-         doc.fontSize(10)
-            .font("Helvetica")
-            .fillColor("#374151")
-            .text("Student data is collected directly by RequireHire with individual consent per DPDPA 2023. We share anonymized interview results with employers - never personal details without candidate consent. Institution has no access to student data unless authorized.", {
-               align: "justify",
-               lineGap: 2,
-            });
-         
-         doc.moveDown(1);
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#1e293b").text("7. DATA & PRIVACY", { width: usableWidth });
+         doc.fontSize(7).font("Helvetica").fillColor("#374151").text("Student data collected by RequireHire with consent per DPDPA 2023. Anonymized results shared with employers.", { width: usableWidth });
+         doc.moveDown(0.15);
          
          // Section 8: CONFIDENTIALITY
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("8. CONFIDENTIALITY");
-         doc.moveDown(0.3);
-         doc.fontSize(10)
-            .font("Helvetica")
-            .fillColor("#374151")
-            .text("Institution shall keep confidential all business strategies, pricing, algorithms, employer information, and proprietary data. This obligation survives for 5 years after termination.", {
-               align: "justify",
-               lineGap: 2,
-            });
-         
-         doc.moveDown(1);
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#1e293b").text("8. CONFIDENTIALITY", { width: usableWidth });
+         doc.fontSize(7).font("Helvetica").fillColor("#374151").text("Institution shall keep confidential all business strategies, pricing, algorithms, employer information. Survives 5 years after termination.", { width: usableWidth });
+         doc.moveDown(0.15);
          
          // Section 9: DISCLAIMERS
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("9. DISCLAIMERS");
-         doc.moveDown(0.3);
-         doc.fontSize(10)
-            .font("Helvetica")
-            .fillColor("#374151")
-            .text("Platform provided \"AS IS\". RequireHire does NOT guarantee employment, job offers, or placement for any student. Services are supplementary to Institution's own placement efforts.", {
-               align: "justify",
-               lineGap: 2,
-            });
-         
-         doc.moveDown(1);
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#1e293b").text("9. DISCLAIMERS", { width: usableWidth });
+         doc.fontSize(7).font("Helvetica").fillColor("#374151").text("Platform provided \"AS IS\". RequireHire does NOT guarantee employment or placement for any student.", { width: usableWidth });
+         doc.moveDown(0.15);
          
          // Section 10: INDEMNIFICATION
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("10. INDEMNIFICATION");
-         doc.moveDown(0.3);
-         doc.fontSize(10)
-            .font("Helvetica")
-            .fillColor("#374151")
-            .text("Institution shall indemnify RequireHire against all claims arising from breach of this MoU, misrepresentation of student credentials, unauthorized platform use, or claims by students/third parties.", {
-               align: "justify",
-               lineGap: 2,
-            });
-         
-         doc.moveDown(1);
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#1e293b").text("10. INDEMNIFICATION", { width: usableWidth });
+         doc.fontSize(7).font("Helvetica").fillColor("#374151").text("Institution shall indemnify RequireHire against claims from breach, misrepresentation, or unauthorized use.", { width: usableWidth });
+         doc.moveDown(0.15);
          
          // Section 11: NON-EXCLUSIVITY
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("11. NON-EXCLUSIVITY");
-         doc.moveDown(0.3);
-         doc.fontSize(10)
-            .font("Helvetica")
-            .fillColor("#374151")
-            .text("This MoU is non-exclusive. RequireHire may partner with other institutions. Institution may use other recruitment platforms.", {
-               align: "justify",
-               lineGap: 2,
-            });
-         
-         doc.moveDown(1);
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#1e293b").text("11. NON-EXCLUSIVITY", { width: usableWidth });
+         doc.fontSize(7).font("Helvetica").fillColor("#374151").text("This MoU is non-exclusive. Both parties may partner with others.", { width: usableWidth });
+         doc.moveDown(0.15);
          
          // Section 12: NO FINANCIAL OBLIGATION
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("12. NO FINANCIAL OBLIGATION");
-         doc.moveDown(0.3);
-         doc.fontSize(10)
-            .font("Helvetica")
-            .fillColor("#374151")
-            .text("This is a non-commercial partnership. Neither party has financial obligations unless separately agreed in writing. Institution shall NOT charge students for platform access.", {
-               align: "justify",
-               lineGap: 2,
-            });
-         
-         doc.moveDown(1);
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#1e293b").text("12. NO FINANCIAL OBLIGATION", { width: usableWidth });
+         doc.fontSize(7).font("Helvetica").fillColor("#374151").text("Non-commercial partnership. No financial obligations. Institution shall NOT charge students.", { width: usableWidth });
+         doc.moveDown(0.15);
          
          // Section 13: LOGO & NAME USAGE
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("13. LOGO & NAME USAGE");
-         doc.moveDown(0.3);
-         doc.fontSize(10)
-            .font("Helvetica")
-            .fillColor("#374151")
-            .text("RequireHire may use the Institution's name and logo on its company website, marketing materials, and promotional content to showcase the partnership. Such use shall be limited to factual representation of the partnership.", {
-               align: "justify",
-               lineGap: 2,
-            });
-         
-         doc.moveDown(1);
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#1e293b").text("13. LOGO & NAME USAGE", { width: usableWidth });
+         doc.fontSize(7).font("Helvetica").fillColor("#374151").text("RequireHire may use Institution's name/logo on website and marketing materials.", { width: usableWidth });
+         doc.moveDown(0.15);
          
          // Section 14: GOVERNING LAW & DISPUTES
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("14. GOVERNING LAW & DISPUTES");
-         doc.moveDown(0.3);
-         doc.fontSize(10)
-            .font("Helvetica")
-            .fillColor("#374151")
-            .text("Governed by laws of India. Disputes to be resolved by arbitration in Patna, Bihar under Arbitration and Conciliation Act, 1996. Courts at Patna shall have exclusive jurisdiction.", {
-               align: "justify",
-               lineGap: 2,
-            });
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#1e293b").text("14. GOVERNING LAW & DISPUTES", { width: usableWidth });
+         doc.fontSize(7).font("Helvetica").fillColor("#374151").text("Governed by laws of India. Arbitration in Patna under Arbitration Act, 1996.", { width: usableWidth });
          
-         // ========== PAGE 3: SIGNATURES ==========
-         doc.addPage();
-         addHeader();
-         doc.y = 70;
+         doc.moveDown(0.4);
          
-         // AGREED AND ACCEPTED
-         doc.fontSize(14)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("AGREED AND ACCEPTED", { align: "center" });
-         
-         doc.moveDown(2);
+         // SIGNATURES SECTION
+         doc.fontSize(10).font("Helvetica-Bold").fillColor("#1e293b").text("AGREED AND ACCEPTED", { width: usableWidth, align: "center" });
+         doc.moveDown(0.5);
          
          // Two columns for signatures
-         const leftCol = 50;
-         const rightCol = pageWidth / 2 + 20;
-         const signatureWidth = (pageWidth - 140) / 2;
+         const leftCol = leftMargin;
+         const rightCol = pageWidth / 2 + 10;
          
-         // RequireHire side
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#0EA5E9")
-            .text("For RequireHire:", leftCol, doc.y);
-         
-         doc.moveDown(2);
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#0EA5E9").text("For RequireHire:", leftCol, doc.y);
+         doc.moveDown(0.8);
          const signY = doc.y;
          
-         doc.fontSize(10)
-            .font("Helvetica")
-            .fillColor("#1e293b")
-            .text("Signature: _______________________", leftCol, signY);
-         
-         doc.moveDown(0.8);
-         doc.text("Name: ___________________________", leftCol);
-         
-         doc.moveDown(0.8);
-         doc.text("Designation: _____________________", leftCol);
-         
-         doc.moveDown(0.8);
-         doc.text("Date: ____________________________", leftCol);
+         doc.fontSize(7).font("Helvetica").fillColor("#1e293b");
+         doc.text("Signature: _______________________", leftCol, signY);
+         doc.text("Name: ___________________________", leftCol, signY + 12);
+         doc.text("Designation: _____________________", leftCol, signY + 24);
+         doc.text("Date: ____________________________", leftCol, signY + 36);
          
          // Institution side
-         doc.fontSize(11)
-            .font("Helvetica-Bold")
-            .fillColor("#0EA5E9")
-            .text("For Institution:", rightCol, signY - 35);
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#0EA5E9").text("For Institution:", rightCol, signY - 15);
+         doc.fontSize(7).font("Helvetica").fillColor("#1e293b");
+         doc.text("Signature: _______________________", rightCol, signY);
+         doc.text("Name: ___________________________", rightCol, signY + 12);
+         doc.text("Designation: _____________________", rightCol, signY + 24);
+         doc.text("Date: ____________________________", rightCol, signY + 36);
+         doc.text("[Institution Seal]", rightCol, signY + 55);
          
-         doc.fontSize(10)
-            .font("Helvetica")
-            .fillColor("#1e293b")
-            .text("Signature: _______________________", rightCol, signY);
-         
-         doc.text("Name: ___________________________", rightCol, signY + 20);
-         doc.text("Designation: _____________________", rightCol, signY + 40);
-         doc.text("Date: ____________________________", rightCol, signY + 60);
-         doc.text("[Institution Seal]", rightCol, signY + 90);
-         
-         doc.moveDown(6);
+         doc.y = signY + 75;
          
          // Contact Information
-         doc.fontSize(12)
-            .font("Helvetica-Bold")
-            .fillColor("#1e293b")
-            .text("CONTACT INFORMATION", { align: "center" });
-         
-         doc.moveDown(1);
-         
-         doc.fontSize(10)
-            .font("Helvetica-Bold")
-            .fillColor("#0EA5E9")
-            .text("RequireHire:", leftCol);
-         doc.font("Helvetica")
-            .fillColor("#374151")
-            .text(`Email: partnerships@requirehire.com | Web: www.requirehire.com`, leftCol);
-         
-         doc.moveDown(1);
-         
-         doc.font("Helvetica-Bold")
-            .fillColor("#0EA5E9")
-            .text("Institution TPO/SPOC:", leftCol);
-         doc.font("Helvetica")
-            .fillColor("#374151")
-            .text(`Name: ${mou.tpoName || "________________"} | Email: ${mou.tpoEmail || "________________"} | Phone: ${mou.tpoPhone || "________________"}`, leftCol);
-         
-         // QR Code section at bottom
-         doc.moveDown(3);
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#1e293b").text("CONTACT INFORMATION", leftMargin, doc.y, { width: usableWidth, align: "center" });
+         doc.moveDown(0.3);
+         doc.fontSize(7).font("Helvetica-Bold").fillColor("#0EA5E9").text("RequireHire: ", { continued: true }).font("Helvetica").fillColor("#374151").text("partnerships@requirehire.com | www.requirehire.com", { width: usableWidth });
+         doc.font("Helvetica-Bold").fillColor("#0EA5E9").text("TPO/SPOC: ", { continued: true }).font("Helvetica").fillColor("#374151").text(`${mou.tpoName || "_____"} | ${mou.tpoEmail || "_____"} | ${mou.tpoPhone || "_____"}`, { width: usableWidth });
+         doc.moveDown(0.4);
          
          // Verification box
          const qrBoxY = doc.y;
-         doc.rect(leftCol, qrBoxY, contentWidth, 100)
-            .lineWidth(1)
-            .stroke("#e2e8f0");
-         
-         doc.fontSize(10)
-            .font("Helvetica-Bold")
-            .fillColor("#64748B")
-            .text("Document Verification", leftCol + 10, qrBoxY + 10);
-         
-         doc.fontSize(9)
-            .font("Helvetica")
-            .fillColor("#374151")
-            .text(`Reference: ${mou.mouNumber}`, leftCol + 10, qrBoxY + 28);
-         doc.text(`Scan QR code or visit: ${verificationUrl}`, leftCol + 10, qrBoxY + 42);
-         doc.text(`Generated: ${new Date().toLocaleDateString("en-IN")}`, leftCol + 10, qrBoxY + 56);
+         doc.rect(leftCol, qrBoxY, contentWidth, 55).lineWidth(1).stroke("#e2e8f0");
+         doc.fontSize(8).font("Helvetica-Bold").fillColor("#64748B").text("Document Verification", leftCol + 8, qrBoxY + 6);
+         doc.fontSize(7).font("Helvetica").fillColor("#374151");
+         doc.text(`Reference: ${mou.mouNumber}`, leftCol + 8, qrBoxY + 18);
+         doc.text(`Scan QR or visit: ${verificationUrl}`, leftCol + 8, qrBoxY + 30);
+         doc.text(`Generated: ${new Date().toLocaleDateString("en-IN")}`, leftCol + 8, qrBoxY + 42);
          
          // QR Code
          const qrBuffer = Buffer.from(qrCodeDataUrl.split(",")[1], "base64");
-         doc.image(qrBuffer, pageWidth - 130, qrBoxY + 10, { width: 70 });
+         doc.image(qrBuffer, pageWidth - 95, qrBoxY + 5, { width: 45 });
          
-         // Add footers to all pages
+         // Add headers and footers to all pages
          const pageRange = doc.bufferedPageRange();
          for (let i = 0; i < pageRange.count; i++) {
             doc.switchToPage(i);
-            addFooter(i + 1, pageRange.count);
+            addHeaderToPage(i);
+            addFooterToPage(i + 1, pageRange.count);
          }
 
          doc.end();

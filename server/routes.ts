@@ -2,7 +2,8 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { dbStorage as storage } from "./dbStorage";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
-import { generateCertificatePDF, generateOfferLetterPDF, generateEmployeeOfferLetterPDF, generateMouPDF } from "./pdfGenerator";
+import { generateCertificatePDF, generateOfferLetterPDF, generateEmployeeOfferLetterPDF } from "./pdfGenerator";
+import { generateMouPDF } from "./mouPdfGenerator";
 import { 
   sendApplicationConfirmation,
   sendStatusChangeNotification,

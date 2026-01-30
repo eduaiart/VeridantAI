@@ -4,7 +4,7 @@ import {
   users, contacts, internshipPrograms, internshipApplications,
   applicationStatusHistory, messages, emailTemplates,
   certificates, offerLetters, verificationLogs, weeklyReports,
-  employees, employmentDocuments, employmentHistory, employeeOfferLetters,
+  employees, employmentDocuments, employmentHistory, employeeOfferLetters, collegeMous,
   type User, type InsertUser,
   type Contact, type InsertContact,
   type InternshipProgram, type InsertInternshipProgram,
@@ -19,7 +19,8 @@ import {
   type Employee, type InsertEmployee,
   type EmploymentDocument, type InsertEmploymentDocument,
   type EmploymentHistory,
-  type EmployeeOfferLetter, type InsertEmployeeOfferLetter
+  type EmployeeOfferLetter, type InsertEmployeeOfferLetter,
+  type CollegeMou, type InsertCollegeMou
 } from "@shared/schema";
 import { IStorage } from "./storage";
 import bcrypt from "bcryptjs";
@@ -56,6 +57,12 @@ function generateEmployeeOfferNumber(count: number): string {
   const year = new Date().getFullYear();
   const num = (count + 1).toString().padStart(5, "0");
   return `EMP-OFR-${year}-${num}`;
+}
+
+function generateMouNumber(count: number): string {
+  const year = new Date().getFullYear();
+  const num = (count + 1).toString().padStart(4, "0");
+  return `MOU-RH-${year}-${num}`;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -696,6 +703,54 @@ export class DatabaseStorage implements IStorage {
 
   async updateEmployeeOfferLetter(id: string, updates: Partial<EmployeeOfferLetter>): Promise<EmployeeOfferLetter | undefined> {
     const result = await db.update(employeeOfferLetters).set(updates).where(eq(employeeOfferLetters.id, id)).returning();
+    return result[0];
+  }
+
+  // ============== COLLEGE MoUs ==============
+
+  async getCollegeMouCount(): Promise<number> {
+    const result = await db.select({ count: sql<number>`count(*)::int` }).from(collegeMous);
+    return Number(result[0]?.count) || 0;
+  }
+
+  async createCollegeMou(mou: InsertCollegeMou): Promise<CollegeMou> {
+    const count = await this.getCollegeMouCount();
+    const mouNumber = generateMouNumber(count);
+    const verificationToken = generateVerificationToken();
+    
+    const result = await db.insert(collegeMous).values({
+      id: randomUUID(),
+      mouNumber,
+      verificationToken,
+      ...mou,
+    }).returning();
+    return result[0];
+  }
+
+  async getCollegeMous(): Promise<CollegeMou[]> {
+    return await db.select().from(collegeMous).orderBy(desc(collegeMous.createdAt));
+  }
+
+  async getCollegeMou(id: string): Promise<CollegeMou | undefined> {
+    const results = await db.select().from(collegeMous).where(eq(collegeMous.id, id));
+    return results[0];
+  }
+
+  async getCollegeMouByToken(token: string): Promise<CollegeMou | undefined> {
+    const results = await db.select().from(collegeMous).where(eq(collegeMous.verificationToken, token));
+    return results[0];
+  }
+
+  async getCollegeMouByNumber(mouNumber: string): Promise<CollegeMou | undefined> {
+    const results = await db.select().from(collegeMous).where(eq(collegeMous.mouNumber, mouNumber));
+    return results[0];
+  }
+
+  async updateCollegeMou(id: string, updates: Partial<CollegeMou>): Promise<CollegeMou | undefined> {
+    const result = await db.update(collegeMous).set({
+      ...updates,
+      updatedAt: new Date()
+    }).where(eq(collegeMous.id, id)).returning();
     return result[0];
   }
 }

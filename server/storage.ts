@@ -12,7 +12,8 @@ import {
   type WeeklyReport, type InsertWeeklyReport,
   type Employee, type InsertEmployee,
   type EmploymentDocument, type InsertEmploymentDocument,
-  type EmploymentHistory
+  type EmploymentHistory,
+  type CollegeMou, type InsertCollegeMou
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -100,6 +101,15 @@ export interface IStorage {
   // Employment History
   addEmploymentHistory(employeeId: string, changeType: string, previousValue: string | null, newValue: string, changedBy: string | null, notes?: string): Promise<EmploymentHistory>;
   getEmploymentHistory(employeeId: string): Promise<EmploymentHistory[]>;
+  
+  // College MoUs
+  createCollegeMou(mou: InsertCollegeMou): Promise<CollegeMou>;
+  getCollegeMous(): Promise<CollegeMou[]>;
+  getCollegeMou(id: string): Promise<CollegeMou | undefined>;
+  getCollegeMouByToken(token: string): Promise<CollegeMou | undefined>;
+  getCollegeMouByNumber(mouNumber: string): Promise<CollegeMou | undefined>;
+  updateCollegeMou(id: string, data: Partial<CollegeMou>): Promise<CollegeMou | undefined>;
+  getCollegeMouCount(): Promise<number>;
 }
 
 // Helper to generate application numbers
@@ -132,6 +142,13 @@ function generateVerificationToken(): string {
 function generateEmployeeId(count: number): string {
   const paddedCount = String(count + 1).padStart(3, '0');
   return `VAI-EMP-${paddedCount}`;
+}
+
+// Helper to generate MoU numbers
+function generateMouNumber(count: number): string {
+  const year = new Date().getFullYear();
+  const paddedCount = String(count + 1).padStart(4, '0');
+  return `MOU-RH-${year}-${paddedCount}`;
 }
 
 export class MemStorage implements IStorage {
@@ -920,6 +937,36 @@ VeridantAI HR Team`,
     const updated = { ...report, ...data };
     this.weeklyReports.set(id, updated);
     return updated;
+  }
+
+  // ============== COLLEGE MoUs (Stubs - use DatabaseStorage for MoU operations) ==============
+  
+  async createCollegeMou(_mou: InsertCollegeMou): Promise<CollegeMou> {
+    throw new Error("MoU operations require DatabaseStorage");
+  }
+  
+  async getCollegeMous(): Promise<CollegeMou[]> {
+    return [];
+  }
+  
+  async getCollegeMou(_id: string): Promise<CollegeMou | undefined> {
+    return undefined;
+  }
+  
+  async getCollegeMouByToken(_token: string): Promise<CollegeMou | undefined> {
+    return undefined;
+  }
+  
+  async getCollegeMouByNumber(_mouNumber: string): Promise<CollegeMou | undefined> {
+    return undefined;
+  }
+  
+  async updateCollegeMou(_id: string, _data: Partial<CollegeMou>): Promise<CollegeMou | undefined> {
+    return undefined;
+  }
+  
+  async getCollegeMouCount(): Promise<number> {
+    return 0;
   }
 }
 

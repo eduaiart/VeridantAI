@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { dbStorage as storage } from "./dbStorage";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
-import { generateCertificatePDF, generateOfferLetterPDF, generateEmployeeOfferLetterPDF } from "./pdfGenerator";
+import { generateCertificatePDF, generateOfferLetterPDF, generateEmployeeOfferLetterPDF, generateMouPDF } from "./pdfGenerator";
 import { 
   sendApplicationConfirmation,
   sendStatusChangeNotification,
@@ -1383,6 +1383,138 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(offerLetters);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch offer letters" });
+    }
+  });
+
+  // ============== COLLEGE MoU ROUTES ==============
+
+  // Get all MoUs (admin only)
+  app.get("/api/mous", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const mous = await storage.getCollegeMous();
+      res.json(mous);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch MoUs" });
+    }
+  });
+
+  // Get single MoU
+  app.get("/api/mous/:id", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const mou = await storage.getCollegeMou(req.params.id);
+      if (!mou) {
+        return res.status(404).json({ error: "MoU not found" });
+      }
+      res.json(mou);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch MoU" });
+    }
+  });
+
+  // Create MoU
+  app.post("/api/mous", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const { collegeName, collegeAddress, collegeCity, collegeState, collegePincode, tpoName, tpoEmail, tpoPhone, signedDate } = req.body;
+      
+      if (!collegeName || !collegeAddress) {
+        return res.status(400).json({ error: "College name and address are required" });
+      }
+
+      const validFrom = signedDate ? new Date(signedDate) : new Date();
+      const validTo = new Date(validFrom);
+      validTo.setFullYear(validTo.getFullYear() + 3); // 3 years validity
+
+      const mou = await storage.createCollegeMou({
+        collegeName,
+        collegeAddress,
+        collegeCity: collegeCity || null,
+        collegeState: collegeState || null,
+        collegePincode: collegePincode || null,
+        tpoName: tpoName || null,
+        tpoEmail: tpoEmail || null,
+        tpoPhone: tpoPhone || null,
+        signedDate: signedDate ? new Date(signedDate) : null,
+        validFrom,
+        validTo,
+        status: "draft",
+        createdBy: req.user?.userId || null,
+      });
+
+      res.status(201).json(mou);
+    } catch (error) {
+      console.error("Error creating MoU:", error);
+      res.status(500).json({ error: "Failed to create MoU" });
+    }
+  });
+
+  // Update MoU
+  app.patch("/api/mous/:id", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const mou = await storage.updateCollegeMou(req.params.id, req.body);
+      if (!mou) {
+        return res.status(404).json({ error: "MoU not found" });
+      }
+      res.json(mou);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update MoU" });
+    }
+  });
+
+  // Generate and download MoU PDF
+  app.get("/api/mous/:id/download", authMiddleware, async (req, res) => {
+    try {
+      const mou = await storage.getCollegeMou(req.params.id);
+      if (!mou) {
+        return res.status(404).json({ error: "MoU not found" });
+      }
+
+      const protocol = req.headers["x-forwarded-proto"] || "https";
+      const host = req.headers.host || "veridantai.in";
+      const baseUrl = `${protocol}://${host}`;
+
+      const pdfBuffer = await generateMouPDF(mou, baseUrl);
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="MoU-${mou.mouNumber}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating MoU PDF:", error);
+      res.status(500).json({ error: "Failed to generate MoU PDF" });
+    }
+  });
+
+  // Verify MoU by token (public route)
+  app.get("/api/verify/mou/:token", async (req, res) => {
+    try {
+      const mou = await storage.getCollegeMouByToken(req.params.token);
+      if (!mou) {
+        return res.status(404).json({ error: "MoU not found", valid: false });
+      }
+
+      // Log verification
+      await storage.logVerification({
+        documentType: "mou",
+        documentId: mou.id,
+        verificationToken: req.params.token,
+        verifierIp: req.ip || null,
+        verifierUserAgent: req.headers["user-agent"] || null,
+        verificationResult: mou.status === "terminated" ? "terminated" : "valid",
+      });
+
+      res.json({
+        valid: mou.status !== "terminated",
+        documentType: "mou",
+        mouNumber: mou.mouNumber,
+        collegeName: mou.collegeName,
+        collegeAddress: mou.collegeAddress,
+        signedDate: mou.signedDate,
+        validFrom: mou.validFrom,
+        validTo: mou.validTo,
+        status: mou.status,
+        tpoName: mou.tpoName,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Verification failed" });
     }
   });
 

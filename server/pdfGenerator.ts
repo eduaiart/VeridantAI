@@ -1166,6 +1166,7 @@ export async function generateMouPDF(
          const doc = new PDFDocument({
             size: "A4",
             margins: { top: 60, bottom: 60, left: 50, right: 50 },
+            bufferPages: true,
          });
 
          const chunks: Buffer[] = [];

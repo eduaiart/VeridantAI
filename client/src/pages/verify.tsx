@@ -16,7 +16,9 @@ import {
   Calendar,
   User,
   Briefcase,
-  AlertTriangle
+  AlertTriangle,
+  GraduationCap,
+  MapPin
 } from "lucide-react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -51,11 +53,24 @@ interface OfferVerification {
   };
 }
 
+interface MouVerification {
+  valid: boolean;
+  documentType?: string;
+  mouNumber?: string;
+  collegeName?: string;
+  collegeAddress?: string;
+  signedDate?: string;
+  validFrom?: string;
+  validTo?: string;
+  status?: string;
+  tpoName?: string;
+}
+
 export default function VerifyPage() {
   const [, params] = useRoute("/verify/:token");
   const [verificationCode, setVerificationCode] = useState(params?.token || "");
   const [activeTab, setActiveTab] = useState("certificate");
-  const [documentType, setDocumentType] = useState<"certificate" | "offer" | "employee-offer" | null>(null);
+  const [documentType, setDocumentType] = useState<"certificate" | "offer" | "employee-offer" | "mou" | null>(null);
 
   const certificateMutation = useMutation<CertificateVerification, Error, string>({
     mutationFn: async (token: string) => {
@@ -74,6 +89,13 @@ export default function VerifyPage() {
   const employeeOfferMutation = useMutation<OfferVerification, Error, string>({
     mutationFn: async (token: string) => {
       const response = await fetch(`/api/verify/employee-offer/${token}`);
+      return response.json();
+    },
+  });
+
+  const mouMutation = useMutation<MouVerification, Error, string>({
+    mutationFn: async (token: string) => {
+      const response = await fetch(`/api/verify/mou/${token}`);
       return response.json();
     },
   });
@@ -111,6 +133,14 @@ export default function VerifyPage() {
       return;
     }
     
+    // Try MoU
+    const mouResult = await mouMutation.mutateAsync(token);
+    if (mouResult.valid) {
+      setDocumentType("mou");
+      setActiveTab("mou");
+      return;
+    }
+    
     // None found - show certificate tab with error
     setDocumentType("certificate");
     setActiveTab("certificate");
@@ -122,6 +152,9 @@ export default function VerifyPage() {
     if (activeTab === "certificate") {
       certificateMutation.mutate(verificationCode);
       setDocumentType("certificate");
+    } else if (activeTab === "mou") {
+      mouMutation.mutate(verificationCode);
+      setDocumentType("mou");
     } else {
       // Try internship offer first, then employee offer
       offerMutation.mutate(verificationCode);
@@ -399,6 +432,148 @@ export default function VerifyPage() {
     );
   };
 
+  const renderMouResult = () => {
+    if (mouMutation.isPending) {
+      return (
+        <div className="text-center py-8">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p>Verifying MoU...</p>
+        </div>
+      );
+    }
+
+    if (!mouMutation.data) return null;
+
+    if (mouMutation.data.valid) {
+      const mou = mouMutation.data;
+      return (
+        <Card className={mou.status === "terminated" ? "border-orange-200 bg-orange-50" : "border-green-200 bg-green-50"}>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-center mb-6">
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center ${mou.status === "terminated" ? "bg-orange-100" : "bg-green-100"}`}>
+                {mou.status === "terminated" ? (
+                  <AlertTriangle className="w-10 h-10 text-orange-600" />
+                ) : (
+                  <CheckCircle className="w-10 h-10 text-green-600" />
+                )}
+              </div>
+            </div>
+            <h3 className={`text-xl font-bold text-center mb-6 ${mou.status === "terminated" ? "text-orange-700" : "text-green-700"}`}>
+              {mou.status === "terminated" ? "MoU Terminated" : "MoU Verified Successfully"}
+            </h3>
+            
+            <div className="space-y-4 bg-white rounded-lg p-6">
+              <div className="flex items-center gap-3 pb-4 border-b">
+                <FileText className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">MoU Reference Number</p>
+                  <p className="font-semibold">{mou.mouNumber}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 pb-4 border-b">
+                <GraduationCap className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Institution Name</p>
+                  <p className="font-semibold">{mou.collegeName}</p>
+                </div>
+              </div>
+              
+              {mou.collegeAddress && (
+                <div className="flex items-center gap-3 pb-4 border-b">
+                  <MapPin className="w-5 h-5 text-primary" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Institution Address</p>
+                    <p className="font-semibold">{mou.collegeAddress}</p>
+                  </div>
+                </div>
+              )}
+              
+              {mou.tpoName && (
+                <div className="flex items-center gap-3 pb-4 border-b">
+                  <User className="w-5 h-5 text-primary" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">TPO / Contact Person</p>
+                    <p className="font-semibold">{mou.tpoName}</p>
+                  </div>
+                </div>
+              )}
+              
+              {mou.signedDate && (
+                <div className="flex items-center gap-3 pb-4 border-b">
+                  <Calendar className="w-5 h-5 text-primary" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Signed Date</p>
+                    <p className="font-semibold">
+                      {new Date(mou.signedDate).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric"
+                      })}
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {mou.validTo && (
+                <div className="flex items-center gap-3 pb-4 border-b">
+                  <Calendar className="w-5 h-5 text-primary" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Valid Until</p>
+                    <p className="font-semibold">
+                      {new Date(mou.validTo).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric"
+                      })}
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-3">
+                <Shield className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <Badge className={
+                    mou.status === "active" ? "bg-green-100 text-green-700" :
+                    mou.status === "expired" ? "bg-orange-100 text-orange-700" :
+                    mou.status === "terminated" ? "bg-red-100 text-red-700" :
+                    "bg-gray-100 text-gray-700"
+                  }>
+                    {mou.status?.toUpperCase() || "DRAFT"}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+            
+            <p className="text-center text-sm text-muted-foreground mt-6">
+              This Memorandum of Understanding is issued by VeridantAI Solution Private Limited for partnership with RequireHire platform
+            </p>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <Card className="border-red-200 bg-red-50">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-center mb-6">
+            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+              <XCircle className="w-10 h-10 text-red-600" />
+            </div>
+          </div>
+          <h3 className="text-xl font-bold text-center text-red-700 mb-4">
+            MoU Not Found
+          </h3>
+          <p className="text-center text-muted-foreground">
+            The verification code could not be matched to any MoU in our records.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -428,7 +603,7 @@ export default function VerifyPage() {
               </CardHeader>
               <CardContent>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                  <TabsList className="grid w-full grid-cols-2">
+                  <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="certificate" data-testid="tab-verify-certificate">
                       <Award className="w-4 h-4 mr-2" />
                       Certificate
@@ -436,6 +611,10 @@ export default function VerifyPage() {
                     <TabsTrigger value="offer" data-testid="tab-verify-offer">
                       <FileText className="w-4 h-4 mr-2" />
                       Offer Letter
+                    </TabsTrigger>
+                    <TabsTrigger value="mou" data-testid="tab-verify-mou">
+                      <GraduationCap className="w-4 h-4 mr-2" />
+                      College MoU
                     </TabsTrigger>
                   </TabsList>
 
@@ -450,7 +629,7 @@ export default function VerifyPage() {
                       />
                       <Button 
                         onClick={handleVerify}
-                        disabled={!verificationCode || certificateMutation.isPending || offerMutation.isPending}
+                        disabled={!verificationCode || certificateMutation.isPending || offerMutation.isPending || mouMutation.isPending}
                         data-testid="button-verify"
                       >
                         <Search className="w-4 h-4 mr-2" />
@@ -469,6 +648,7 @@ export default function VerifyPage() {
             {/* Results */}
             {activeTab === "certificate" && certificateMutation.data && renderCertificateResult()}
             {activeTab === "offer" && (offerMutation.data || employeeOfferMutation.data) && renderOfferResult()}
+            {activeTab === "mou" && mouMutation.data && renderMouResult()}
 
             {/* Info Section */}
             <div className="mt-12 grid md:grid-cols-2 gap-6">

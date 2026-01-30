@@ -32,9 +32,11 @@ import {
   Briefcase,
   UserPlus,
   Building2,
-  Loader2
+  Loader2,
+  GraduationCap,
+  Plus
 } from "lucide-react";
-import type { InternshipApplication, InternshipProgram, Employee } from "@shared/schema";
+import type { InternshipApplication, InternshipProgram, Employee, CollegeMou } from "@shared/schema";
 
 interface DashboardStats {
   totalApplications: number;
@@ -83,6 +85,18 @@ export default function AdminDashboard() {
     city: "",
     state: "",
     pincode: "",
+  });
+  const [showNewMouModal, setShowNewMouModal] = useState(false);
+  const [newMouForm, setNewMouForm] = useState({
+    collegeName: "",
+    collegeAddress: "",
+    collegeCity: "",
+    collegeState: "",
+    collegePincode: "",
+    tpoName: "",
+    tpoEmail: "",
+    tpoPhone: "",
+    signedDate: "",
   });
   const { toast } = useToast();
 
@@ -152,6 +166,120 @@ export default function AdminDashboard() {
       return response.json();
     },
     enabled: !!user,
+  });
+
+  const { data: mous = [], isLoading: mousLoading } = useQuery<CollegeMou[]>({
+    queryKey: ["/api/mous"],
+    queryFn: async () => {
+      const response = await fetch("/api/mous", {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) throw new Error("Failed to fetch MoUs");
+      return response.json();
+    },
+    enabled: !!user,
+  });
+
+  const createMouMutation = useMutation({
+    mutationFn: async (data: typeof newMouForm) => {
+      const response = await fetch("/api/mous", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create MoU");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/mous"] });
+      toast({
+        title: "MoU Created",
+        description: "The Memorandum of Understanding has been created successfully.",
+      });
+      setShowNewMouModal(false);
+      setNewMouForm({
+        collegeName: "",
+        collegeAddress: "",
+        collegeCity: "",
+        collegeState: "",
+        collegePincode: "",
+        tpoName: "",
+        tpoEmail: "",
+        tpoPhone: "",
+        signedDate: "",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const downloadMouMutation = useMutation({
+    mutationFn: async (mouId: string) => {
+      const response = await fetch(`/api/mous/${mouId}/download`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) throw new Error("Failed to download MoU");
+      const blob = await response.blob();
+      return { blob, mouId };
+    },
+    onSuccess: ({ blob }, mouId) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const mou = mous.find(m => m.id === mouId);
+      a.download = `MoU-${mou?.mouNumber || mouId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateMouStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const response = await fetch(`/api/mous/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) throw new Error("Failed to update MoU status");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/mous"] });
+      toast({
+        title: "Status Updated",
+        description: "MoU status has been updated successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
   const updateStatusMutation = useMutation({
@@ -526,6 +654,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="employees" data-testid="tab-admin-employees">
               <Briefcase className="w-4 h-4 mr-2" />
               Employees
+            </TabsTrigger>
+            <TabsTrigger value="mous" data-testid="tab-admin-mous">
+              <GraduationCap className="w-4 h-4 mr-2" />
+              College MoUs
             </TabsTrigger>
           </TabsList>
 
@@ -1255,6 +1387,113 @@ export default function AdminDashboard() {
               </div>
             </div>
           </TabsContent>
+
+          {/* College MoUs Tab */}
+          <TabsContent value="mous">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold">College MoU Management</h2>
+                  <p className="text-sm text-muted-foreground">Manage partnership agreements with educational institutions</p>
+                </div>
+                <Button onClick={() => setShowNewMouModal(true)} data-testid="btn-new-mou">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create New MoU
+                </Button>
+              </div>
+
+              {mousLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : mous.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <GraduationCap className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No MoUs Created</h3>
+                    <p className="text-muted-foreground mb-4">Get started by creating your first college partnership agreement.</p>
+                    <Button onClick={() => setShowNewMouModal(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create First MoU
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4">
+                  {mous.map((mou) => (
+                    <Card key={mou.id} className="hover:border-primary/50 transition-colors">
+                      <CardContent className="pt-6">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold text-lg">{mou.collegeName}</h3>
+                              <Badge
+                                className={
+                                  mou.status === "active" ? "bg-green-100 text-green-700" :
+                                  mou.status === "draft" ? "bg-gray-100 text-gray-700" :
+                                  mou.status === "expired" ? "bg-orange-100 text-orange-700" :
+                                  "bg-red-100 text-red-700"
+                                }
+                              >
+                                {mou.status?.toUpperCase()}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Ref: {mou.mouNumber}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {mou.collegeAddress}
+                              {mou.collegeCity && `, ${mou.collegeCity}`}
+                              {mou.collegeState && `, ${mou.collegeState}`}
+                            </p>
+                            {mou.tpoName && (
+                              <p className="text-sm text-muted-foreground">
+                                TPO: {mou.tpoName} {mou.tpoEmail && `(${mou.tpoEmail})`}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2">
+                              {mou.signedDate && (
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="w-4 h-4" />
+                                  Signed: {new Date(mou.signedDate).toLocaleDateString("en-IN")}
+                                </span>
+                              )}
+                              {mou.validTo && (
+                                <span className="flex items-center gap-1">
+                                  Valid until: {new Date(mou.validTo).toLocaleDateString("en-IN")}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {mou.status === "draft" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateMouStatusMutation.mutate({ id: mou.id, status: "active" })}
+                              >
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                Activate
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => downloadMouMutation.mutate(mou.id)}
+                              disabled={downloadMouMutation.isPending}
+                            >
+                              <Download className="w-4 h-4 mr-1" />
+                              Download PDF
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -1528,6 +1767,126 @@ export default function AdminDashboard() {
               onCancel={() => setShowConvertModal(false)}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* New MoU Modal */}
+      <Dialog open={showNewMouModal} onOpenChange={setShowNewMouModal}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New College MoU</DialogTitle>
+            <DialogDescription>Enter college details to generate a Memorandum of Understanding</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="mou-collegeName">College Name *</Label>
+              <Input
+                id="mou-collegeName"
+                value={newMouForm.collegeName}
+                onChange={(e) => setNewMouForm({ ...newMouForm, collegeName: e.target.value })}
+                placeholder="ABC College of Engineering"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="mou-collegeAddress">College Address *</Label>
+              <Textarea
+                id="mou-collegeAddress"
+                value={newMouForm.collegeAddress}
+                onChange={(e) => setNewMouForm({ ...newMouForm, collegeAddress: e.target.value })}
+                placeholder="Full street address of the college"
+                rows={2}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="mou-collegeCity">City</Label>
+                <Input
+                  id="mou-collegeCity"
+                  value={newMouForm.collegeCity}
+                  onChange={(e) => setNewMouForm({ ...newMouForm, collegeCity: e.target.value })}
+                  placeholder="City"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="mou-collegeState">State</Label>
+                <Input
+                  id="mou-collegeState"
+                  value={newMouForm.collegeState}
+                  onChange={(e) => setNewMouForm({ ...newMouForm, collegeState: e.target.value })}
+                  placeholder="State"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="mou-collegePincode">Pincode</Label>
+              <Input
+                id="mou-collegePincode"
+                value={newMouForm.collegePincode}
+                onChange={(e) => setNewMouForm({ ...newMouForm, collegePincode: e.target.value })}
+                placeholder="800001"
+              />
+            </div>
+            <div className="border-t pt-4 mt-4">
+              <h4 className="font-medium mb-3">TPO / Contact Person (Optional)</h4>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="mou-tpoName">TPO Name</Label>
+                  <Input
+                    id="mou-tpoName"
+                    value={newMouForm.tpoName}
+                    onChange={(e) => setNewMouForm({ ...newMouForm, tpoName: e.target.value })}
+                    placeholder="Dr. John Doe"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="mou-tpoEmail">Email</Label>
+                    <Input
+                      id="mou-tpoEmail"
+                      type="email"
+                      value={newMouForm.tpoEmail}
+                      onChange={(e) => setNewMouForm({ ...newMouForm, tpoEmail: e.target.value })}
+                      placeholder="tpo@college.edu"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="mou-tpoPhone">Phone</Label>
+                    <Input
+                      id="mou-tpoPhone"
+                      value={newMouForm.tpoPhone}
+                      onChange={(e) => setNewMouForm({ ...newMouForm, tpoPhone: e.target.value })}
+                      placeholder="+91-9876543210"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="mou-signedDate">MoU Date</Label>
+              <Input
+                id="mou-signedDate"
+                type="date"
+                value={newMouForm.signedDate}
+                onChange={(e) => setNewMouForm({ ...newMouForm, signedDate: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter className="mt-6">
+            <Button variant="outline" onClick={() => setShowNewMouModal(false)}>Cancel</Button>
+            <Button
+              onClick={() => createMouMutation.mutate(newMouForm)}
+              disabled={createMouMutation.isPending || !newMouForm.collegeName || !newMouForm.collegeAddress}
+            >
+              {createMouMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create MoU"
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

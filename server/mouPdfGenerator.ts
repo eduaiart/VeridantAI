@@ -4,7 +4,11 @@ import fs from "fs";
 import path from "path";
 import { CollegeMou } from "@shared/schema";
 
-const LOGO_PATH = path.join(process.cwd(), "attached_assets", "logo.png");
+const LOGO_PATH = path.join(
+   process.cwd(),
+   "attached_assets",
+   "2nd_logo_highres_1767216390338.png"
+);
 const COMPANY_NAME = "Veridant AI Private Limited";
 const COMPANY_CIN = "U62099BR2025PTC079060";
 const COMPANY_ADDRESS = "Shivam Vihar Colony, Beur, Phulwari, Patna-800002, Bihar, India";
@@ -321,22 +325,24 @@ export async function generateMouPDF(
             .stroke("#e2e8f0");
          doc.moveDown(0.8);
 
-         // CONTACT INFORMATION
+         // CONTACT INFORMATION (left-aligned)
          doc.fontSize(11)
             .fillColor("#0EA5E9")
-            .text("CONTACT INFORMATION", { align: "center" });
+            .text("CONTACT INFORMATION", 50);
          doc.moveDown(0.5);
 
          doc.fontSize(10).fillColor("#374151");
-         doc.text(`RequireHire: Email: partnerships@requirehire.com | Web: www.requirehire.com`, { align: "center" });
-         doc.moveDown(0.3);
-         doc.text(`Institution TPO/SPOC: ${mou.tpoName || "Name: ______________"} | ${mou.tpoEmail || "Email: ______________"} | ${mou.tpoPhone || "Phone: ______________"}`, { align: "center" });
+         doc.text("RequireHire:", 50);
+         doc.text("Email: partnerships@requirehire.com | Web: www.requirehire.com", 50, doc.y, { indent: 20 });
+         doc.moveDown(0.5);
+         doc.text("Institution TPO/SPOC:", 50);
+         doc.text(`Name: ${mou.tpoName || "______________"} | Email: ${mou.tpoEmail || "______________"} | Phone: ${mou.tpoPhone || "______________"}`, 50, doc.y, { indent: 20 });
          doc.moveDown(1);
 
          // End of Agreement
          doc.fontSize(9)
             .fillColor("#64748B")
-            .text("— End of Agreement —", { align: "center" });
+            .text("— End of Agreement —", 50);
          doc.moveDown(1);
 
          // QR Code and Verification (at bottom like Offer Letter)

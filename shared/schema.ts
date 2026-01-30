@@ -373,6 +373,40 @@ export const employeeOfferLetters = pgTable("employee_offer_letters", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// ============== MoU (Memorandum of Understanding) ==============
+
+export const collegeMous = pgTable("college_mous", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  mouNumber: text("mou_number").notNull().unique(), // e.g., "MOU-RH-2025-0001"
+  
+  // College/Institution Details
+  collegeName: text("college_name").notNull(),
+  collegeAddress: text("college_address").notNull(),
+  collegeCity: text("college_city"),
+  collegeState: text("college_state"),
+  collegePincode: text("college_pincode"),
+  tpoName: text("tpo_name"), // Training & Placement Officer
+  tpoEmail: text("tpo_email"),
+  tpoPhone: text("tpo_phone"),
+  
+  // MoU Details
+  signedDate: timestamp("signed_date"),
+  validFrom: timestamp("valid_from"),
+  validTo: timestamp("valid_to"), // Default 3 years from signing
+  
+  // Document
+  mouPdfUrl: text("mou_pdf_url"),
+  verificationToken: text("verification_token").notNull().unique(),
+  
+  // Status
+  status: text("status").default("draft"), // 'draft' | 'sent' | 'signed' | 'active' | 'expired' | 'terminated'
+  terminatedReason: text("terminated_reason"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  createdBy: varchar("created_by").references(() => users.id),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // ============== INSERT SCHEMAS ==============
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -454,6 +488,14 @@ export const insertEmployeeOfferLetterSchema = createInsertSchema(employeeOfferL
   createdAt: true,
 });
 
+export const insertCollegeMouSchema = createInsertSchema(collegeMous).omit({
+  id: true,
+  mouNumber: true,
+  verificationToken: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // ============== TYPES ==============
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -482,6 +524,8 @@ export type EmploymentDocument = typeof employmentDocuments.$inferSelect;
 export type EmploymentHistory = typeof employmentHistory.$inferSelect;
 export type InsertEmployeeOfferLetter = z.infer<typeof insertEmployeeOfferLetterSchema>;
 export type EmployeeOfferLetter = typeof employeeOfferLetters.$inferSelect;
+export type InsertCollegeMou = z.infer<typeof insertCollegeMouSchema>;
+export type CollegeMou = typeof collegeMous.$inferSelect;
 
 // ============== VALIDATION SCHEMAS ==============
 
